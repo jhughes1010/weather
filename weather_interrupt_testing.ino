@@ -3,6 +3,8 @@
 #include <WiFi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
 //externs
 extern const char* ntpServer;
@@ -10,10 +12,16 @@ extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
 extern struct tm timeinfo;
 
+//=================== Pin assignment definitions ==========================================
+
+#define WIND_SPD_PIN 14
 #define RAIN_PIN     25
+#define WIND_DIR_PIN 35
+#define VOLT_PIN     33
+#define TEMP_PIN 4  // DS18B20 hooked up to GPIO pin 4
 
 #define US 1E6
-const int UpdateInterval = 1 * 15 * US;  // e.g. 0.33 * 60 * 1000000; // Sleep time
+const int UpdateInterval = 5 * 60 * US;  // e.g. 0.33 * 60 * 1000000; // Sleep time
 
 //========================= Enable Blynk or Thingspeak ===================================
 
@@ -34,8 +42,16 @@ void setup() {
   delay(25);
   Serial.println("\nWeather station - test bed to understand RAIN_PIN.\n");
 
-  //set hardware pins
+  //Rainfall interrupt pin set up
   pinMode(RAIN_PIN, INPUT);     // Rain sensor
+  attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
+
+
+  // Wind speed sensor setup. The windspeed is calculated according to the number
+  //  of ticks per second. Timestamps are captured in the interrupt, and then converted
+  //  into mph.
+  pinMode(WIND_SPD_PIN, INPUT);     // Wind speed sensor
+  attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, FALLING);
 
 
   wakeup_reason();
@@ -99,6 +115,8 @@ void wakeup_reason()
 
 
       //read sensors
+      readWindVelocity();
+      readWindDirection();
       //move rainTicks into hourly containers
       Serial.printf("Current Hour: %i\n\n", timeinfo.tm_hour);
       addTipsToHour(rainTicks);
@@ -127,9 +145,4 @@ void wakeup_reason()
       clearRainfall();
       break;
   }
-}
-
-void rainTick(void)
-{
-  rainTicks++;
 }

@@ -1,4 +1,4 @@
-/*
+/* I have an untracked file called secrets.h with the following code
 //========================= Variables for wifi server setup =============================
 
 // Your WiFi credentials.

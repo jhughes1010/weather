@@ -33,3 +33,8 @@ int last24(void)
   Serial.printf("Total rainfall: %i\n",totalRainfall);
   return totalRainfall;
 }
+//ISR
+void rainTick(void)
+{
+  rainTicks++;
+}
