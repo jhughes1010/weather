@@ -11,6 +11,7 @@ extern const char* ntpServer;
 extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
 extern struct tm timeinfo;
+extern DallasTemperature sensors;
 
 //=================== Pin assignment definitions ==========================================
 
@@ -21,7 +22,7 @@ extern struct tm timeinfo;
 #define TEMP_PIN 4  // DS18B20 hooked up to GPIO pin 4
 
 #define US 1E6
-const int UpdateInterval = 5 * 60 * US;  // e.g. 0.33 * 60 * 1000000; // Sleep time
+const int UpdateInterval = 5 * 60;  // e.g. 0.33 * 60 * 1000000; // Sleep time
 
 //========================= Enable Blynk or Thingspeak ===================================
 
@@ -36,21 +37,27 @@ RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR unsigned char hourlyRainfall[24];
 
 
+//globals
+int temperature;
+
+
 void setup() {
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
   delay(25);
   Serial.println("\nWeather station - test bed to understand RAIN_PIN.\n");
+  sensors.begin();
 
   //Rainfall interrupt pin set up
   pinMode(RAIN_PIN, INPUT);     // Rain sensor
-  attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
+  delay(100); //possible settling time on pin to charge
+  //jh attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
 
 
   // Wind speed sensor setup. The windspeed is calculated according to the number
   //  of ticks per second. Timestamps are captured in the interrupt, and then converted
   //  into mph.
-  pinMode(WIND_SPD_PIN, INPUT);     // Wind speed sensor
+  pinMode(WIND_SPD_PIN, INPUT_PULLUP);     // Wind speed sensor
   attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, FALLING);
 
 
@@ -72,7 +79,7 @@ void setup() {
   }
   else
   {
-    esp_deep_sleep_enable_timer_wakeup(300 * US);
+    esp_deep_sleep_enable_timer_wakeup(3 * US);
   }
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
@@ -116,13 +123,14 @@ void wakeup_reason()
 
       //read sensors
       readWindVelocity();
-      readWindDirection();
+      //readWindDirection();
+      temperature = readTemperature();
       //move rainTicks into hourly containers
       Serial.printf("Current Hour: %i\n\n", timeinfo.tm_hour);
       addTipsToHour(rainTicks);
       clearRainfallHour(timeinfo.tm_hour + 1);
       rainTicks = 0;
-      printHourlyArray();
+      //jh printHourlyArray();
       //send sensor data
       Send_Data();
 

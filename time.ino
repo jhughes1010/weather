@@ -23,12 +23,6 @@ void printTimeNextWake( void)
 
 void updateWake (void)
 {
-  //struct tm timeinfo;
   getLocalTime(&timeinfo);
-  nextUpdate = mktime(&timeinfo) + 30;
-}
-
-void calcSleepTime( void)
-{
-  
+  nextUpdate = mktime(&timeinfo) + UpdateInterval;
 }

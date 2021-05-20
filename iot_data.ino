@@ -7,7 +7,7 @@ void Send_Data()
   // code block for uploading data to BLYNK App
 
   if (App == "BLYNK") { // choose application
-    //Blynk.virtualWrite(0, temperature );   // virtual pin 0
+    Blynk.virtualWrite(0, temperature );   // virtual pin 0
     //Blynk.virtualWrite(1, humidity ); // virtual pin 1
     //Blynk.virtualWrite(2, pressure / 100 );  // virtual pin 2
     //Blynk.virtualWrite(3, UVindex);    // virtual pin 3
@@ -18,7 +18,7 @@ void Send_Data()
     Blynk.virtualWrite(V7, last24() * 0.011);
     //Blynk.virtualWrite(7, batteryVolt);    // virtual pin 7
     //Blynk.virtualWrite(8, sensors.getTempCByIndex(0));    // virtual pin 8
-    delay(5000);
+    delay(1000);
   }
 
   // code block for uploading data to Thingspeak website

@@ -1,3 +1,5 @@
+//None of these functions are validated/working yet
+
 // Variables used in calculating the windspeed
 volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
@@ -15,27 +17,25 @@ int readWindVelocity(void )
   }
   return windSpeed;
 }
+//This function is in testing mode now
 String readWindDirection(void)
 {
-  String windDir;
+  int windPosition;
+  String windDirection = "N";
+  int analogCompare[15] = {150,300,400,600,900,1100,1500,1700,2250,2350,2700,3000,3200,3400,4000};
+  String windDirText[15]={"X","S","X","X","X","E","X","X","X","X","X","X","X","X","X","N"};
   int vin = analogRead(WIND_DIR_PIN);
 
-  if      (vin < 150) windDir = "202.5";
-  else if (vin < 300) windDir = "180";
-  else if (vin < 400) windDir = "247.5";
-  else if (vin < 600) windDir = "225";
-  else if (vin < 900) windDir = "292.5";
-  else if (vin < 1100) windDir = "270";
-  else if (vin < 1500) windDir = "112.5";
-  else if (vin < 1700) windDir = "135";
-  else if (vin < 2250) windDir = "337.5";
-  else if (vin < 2350) windDir = "315";
-  else if (vin < 2700) windDir = "67.5";
-  else if (vin < 3000) windDir = "90";
-  else if (vin < 3200) windDir = "22.5";
-  else if (vin < 3400) windDir = "45";
-  else if (vin < 4000) windDir = "0";
-  else windDir = "0";
+  for(windPosition=0;windPosition<15;windPosition++)
+  {
+    if(vin < analogCompare[windPosition])
+    {
+      windDirection=windDirText[windPosition];
+      break;
+    }
+  }
+  Serial.printf("Wind direction: %s\n",windDirection);
+  return windDirection;
 }
 
 
