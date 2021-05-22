@@ -1,6 +1,27 @@
 OneWire oneWire(TEMP_PIN);
 DallasTemperature sensors(&oneWire);
 
+//data struct for sensors
+struct sensor
+{
+  int temperatureC;
+  int temperatureF;
+  int windSpeed;
+  char* windDirection;
+  float barometricPressure;
+}
+
+//rainfall is stored here for historical data
+struct history
+{
+  unsigned char hourlyRainfall[24];
+  unsigned char currentHourRainfall[12];
+}
+//Entry point for all sensor data reading
+int readSensors(struct sensorData)
+{
+
+}
 int readTemperature (void)
 {
   float tempF;
@@ -18,12 +39,12 @@ int readTemperature (void)
   {
     Serial.print("Temperature for the device 1 (index 0) is: ");
     Serial.println(tempC);
-    tempF = (float)tempC*9/5+32;
+    tempF = (float)tempC * 9 / 5 + 32;
   }
   else
   {
     Serial.println("Error: Could not read temperature data");
     tempF = -40;
   }
-  return (int)tempF; 
+  return (int)tempF;
 }
