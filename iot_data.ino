@@ -7,7 +7,8 @@ void Send_Data(struct sensorData *environment)
   // code block for uploading data to BLYNK App
 
   if (App == "BLYNK") { // choose application
-    Blynk.virtualWrite(0, environment->temperatureF );   // virtual pin 0
+    Blynk.virtualWrite(0, environment->temperatureF );
+    //jh choose to send F or C Blynk.virtualWrite(0, environment->temperatureC );
     //Blynk.virtualWrite(1, humidity ); // virtual pin 1
     //Blynk.virtualWrite(2, pressure / 100 );  // virtual pin 2
     //Blynk.virtualWrite(3, UVindex);    // virtual pin 3
@@ -16,8 +17,8 @@ void Send_Data(struct sensorData *environment)
     //Blynk.virtualWrite(5, windDir);    // virtual pin 5
     Blynk.virtualWrite(V6, rainfall.hourlyRainfall[hourPtr] * 0.011);
     Blynk.virtualWrite(V7, last24() * 0.011);
-    //Blynk.virtualWrite(7, batteryVolt);    // virtual pin 7
     //Blynk.virtualWrite(8, sensors.getTempCByIndex(0));    // virtual pin 8
+    Blynk.virtualWrite(V9, environment->batteryVoltage);
     delay(1000);
   }
 

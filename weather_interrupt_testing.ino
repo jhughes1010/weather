@@ -25,7 +25,7 @@ struct sensorData
   float barometricPressure;
   float UVIndex;
   float LightIndex;
-  int batteryalue;
+  float batteryVoltage;
 };
 
 //rainfall is stored here for historical data uses RTC
@@ -44,7 +44,7 @@ struct historicalData
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
 
 #define US 1E6
-const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
+const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (300s)
 
 //========================= Enable Blynk or Thingspeak ===================================
 
@@ -145,6 +145,7 @@ void wakeup_reason()
 
 
       //read sensors
+      readBattery(&environment);
       //readWindVelocity();
       //readWindDirection();
       readTemperature(&environment);
@@ -174,6 +175,7 @@ void wakeup_reason()
       updateWake();
 
       clearRainfall();
+      readBattery(&environment);
       break;
   }
 }
