@@ -1,50 +1,33 @@
 OneWire oneWire(TEMP_PIN);
-DallasTemperature sensors(&oneWire);
+DallasTemperature temperatureSensor(&oneWire);
 
-//data struct for sensors
-struct sensor
-{
-  int temperatureC;
-  int temperatureF;
-  int windSpeed;
-  char* windDirection;
-  float barometricPressure;
-}
 
-//rainfall is stored here for historical data
-struct history
-{
-  unsigned char hourlyRainfall[24];
-  unsigned char currentHourRainfall[12];
-}
 //Entry point for all sensor data reading
-int readSensors(struct sensorData)
+int readSensors( void)
 {
 
 }
-int readTemperature (void)
+void readTemperature (struct sensorData *environment)
 {
-  float tempF;
   // call sensors.requestTemperatures() to issue a global temperature
   // request to all devices on the bus
   Serial.print("Requesting temperatures...");
-  sensors.requestTemperatures(); // Send the command to get temperatures
+  temperatureSensor.requestTemperatures(); // Send the command to get temperatures
   Serial.println("DONE");
   // After we got the temperatures, we can print them here.
   // We use the function ByIndex, and as an example get the temperature from the first sensor only.
-  float tempC = sensors.getTempCByIndex(0);
+  environment->temperatureC = temperatureSensor.getTempCByIndex(0);
 
   // Check if reading was successful
-  if (tempC != DEVICE_DISCONNECTED_C)
+  if (environment->temperatureC != DEVICE_DISCONNECTED_C)
   {
-    Serial.print("Temperature for the device 1 (index 0) is: ");
-    Serial.println(tempC);
-    tempF = (float)tempC * 9 / 5 + 32;
+    environment->temperatureF = environment->temperatureC * 9 / 5 + 32;
+    Serial.printf("Temperature for the device 1 (index 0) is: %5.1f C: %5.1f F", environment->temperatureC, environment->temperatureF);
   }
   else
   {
     Serial.println("Error: Could not read temperature data");
-    tempF = -40;
+    environment->temperatureF = -40;
+    environment->temperatureC = -40;
   }
-  return (int)tempF;
 }

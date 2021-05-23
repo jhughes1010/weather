@@ -11,18 +11,40 @@ extern const char* ntpServer;
 extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
 extern struct tm timeinfo;
-extern DallasTemperature sensors;
+extern DallasTemperature temperatureSensor;
+//extern struct sensor;
+
+
+//data struct for instantaneous sensor values
+struct sensorData
+{
+  float temperatureC;
+  float temperatureF;
+  int windSpeed;
+  char* windDirection;
+  float barometricPressure;
+  float UVIndex;
+  float LightIndex;
+  int batteryalue;
+};
+
+//rainfall is stored here for historical data uses RTC
+struct historicalData
+{
+  unsigned int hourlyRainfall[24];
+  unsigned int current60MinRainfall[12];
+};
 
 //=================== Pin assignment definitions ==========================================
 
-#define WIND_SPD_PIN 14
-#define RAIN_PIN     25
-#define WIND_DIR_PIN 35
-#define VOLT_PIN     33
-#define TEMP_PIN 4  // DS18B20 hooked up to GPIO pin 4
+#define WIND_SPD_PIN 14  //reed switch based anemometer count
+#define RAIN_PIN     25  //reed switch based tick counter on tip bucket
+#define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
+#define VOLT_PIN     33  //voltage divider for battery monitor
+#define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
 
 #define US 1E6
-const int UpdateInterval = 5 * 60;  // e.g. 0.33 * 60 * 1000000; // Sleep time
+const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
 
 //========================= Enable Blynk or Thingspeak ===================================
 
@@ -34,19 +56,19 @@ const String App = "BLYNK";         //  alternative is line below
 RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
-RTC_DATA_ATTR unsigned char hourlyRainfall[24];
+RTC_DATA_ATTR struct historicalData rainfall;
 
 
 //globals
-int temperature;
+//int temperature;
 
 
 void setup() {
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
   delay(25);
-  Serial.println("\nWeather station - test bed to understand RAIN_PIN.\n");
-  sensors.begin();
+  Serial.println("\nWeather station - Deep sleep version.\n");
+  temperatureSensor.begin();
 
   //Rainfall interrupt pin set up
   pinMode(RAIN_PIN, INPUT);     // Rain sensor
@@ -92,6 +114,7 @@ void loop()
 //check for WAKE reason and respond accordingly
 void wakeup_reason()
 {
+  struct sensorData environment;
   esp_sleep_wakeup_cause_t wakeup_reason;
 
   wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -122,9 +145,9 @@ void wakeup_reason()
 
 
       //read sensors
-      readWindVelocity();
+      //readWindVelocity();
       //readWindDirection();
-      temperature = readTemperature();
+      readTemperature(&environment);
       //move rainTicks into hourly containers
       Serial.printf("Current Hour: %i\n\n", timeinfo.tm_hour);
       addTipsToHour(rainTicks);
@@ -132,7 +155,7 @@ void wakeup_reason()
       rainTicks = 0;
       //jh printHourlyArray();
       //send sensor data
-      Send_Data();
+      Send_Data(&environment);
 
       //reset rainTicks to 0 as number has been added to hourly totals
 

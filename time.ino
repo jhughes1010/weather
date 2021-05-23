@@ -24,5 +24,5 @@ void printTimeNextWake( void)
 void updateWake (void)
 {
   getLocalTime(&timeinfo);
-  nextUpdate = mktime(&timeinfo) + UpdateInterval;
+  nextUpdate = mktime(&timeinfo) + UpdateIntervalSeconds;
 }

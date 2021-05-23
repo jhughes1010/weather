@@ -1,17 +1,18 @@
 void clearRainfall(void)
 {
-  memset(hourlyRainfall, 0x00, 24);
+  
+  memset(&rainfall, 0x00, sizeof(&rainfall));
 }
 
 void clearRainfallHour(int hourPtr)
 {
-  hourlyRainfall[hourPtr % 24] = 0;
+  rainfall.hourlyRainfall[hourPtr % 24] = 0;
 }
 
 void addTipsToHour(int count)
 {
   int hourPtr = timeinfo.tm_hour;
-  hourlyRainfall[hourPtr] = hourlyRainfall[hourPtr] + count;
+  rainfall.hourlyRainfall[hourPtr] = rainfall.hourlyRainfall[hourPtr] + count;
 }
 
 void printHourlyArray (void)
@@ -19,7 +20,7 @@ void printHourlyArray (void)
   int hourCount = 0;
   for (hourCount = 0; hourCount < 24; hourCount++)
   {
-    Serial.printf("Hour %i: %u\n", hourCount, hourlyRainfall[hourCount]);
+    Serial.printf("Hour %i: %u\n", hourCount, rainfall.hourlyRainfall[hourCount]);
   }
 }
 int last24(void)
@@ -28,7 +29,7 @@ int last24(void)
   int totalRainfall=0;
   for (hour = 0; hour < 24; hour++)
   {
-    totalRainfall += hourlyRainfall[hour];
+    totalRainfall += rainfall.hourlyRainfall[hour];
   }
   Serial.printf("Total rainfall: %i\n",totalRainfall);
   return totalRainfall;
