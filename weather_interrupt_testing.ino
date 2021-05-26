@@ -21,7 +21,7 @@ struct sensorData
   float temperatureC;
   float temperatureF;
   int windSpeed;
-  char* windDirection;
+  char windDirection[4];
   float barometricPressure;
   float UVIndex;
   float LightIndex;
@@ -42,6 +42,8 @@ struct historicalData
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
 #define VOLT_PIN     33  //voltage divider for battery monitor
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
+
+#define LED           2  //Diagnostics using built-in LED
 
 #define US 1E6
 const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (300s)
@@ -79,10 +81,11 @@ void setup() {
   // Wind speed sensor setup. The windspeed is calculated according to the number
   //  of ticks per second. Timestamps are captured in the interrupt, and then converted
   //  into mph.
-  pinMode(WIND_SPD_PIN, INPUT_PULLUP);     // Wind speed sensor
-  attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, FALLING);
+  pinMode(WIND_SPD_PIN, INPUT);     // Wind speed sensor
+  attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
 
-
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, 1);
   wakeup_reason();
 
 
@@ -111,6 +114,9 @@ void loop()
 {
   //no loop code
 }
+
+
+
 //check for WAKE reason and respond accordingly
 void wakeup_reason()
 {
@@ -133,10 +139,10 @@ void wakeup_reason()
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       Serial.println("Wakeup caused by timer");
       updateWake();
-
+      digitalWrite(LED, 0);
       //connect to WiFi
       wifi_connect();
-
+      digitalWrite(LED, 0);
       //init and get the time
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
@@ -146,8 +152,8 @@ void wakeup_reason()
 
       //read sensors
       readBattery(&environment);
-      //readWindVelocity();
-      //readWindDirection();
+      readWindSpeed(&environment);
+      readWindDirection(&environment);
       readTemperature(&environment);
       //move rainTicks into hourly containers
       Serial.printf("Current Hour: %i\n\n", timeinfo.tm_hour);
@@ -159,7 +165,8 @@ void wakeup_reason()
       Send_Data(&environment);
 
       //reset rainTicks to 0 as number has been added to hourly totals
-
+      WiFi.disconnect();
+      delay(5000);
       break;
     //case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
@@ -167,8 +174,9 @@ void wakeup_reason()
       Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
 
       //connect to WiFi
+      //digitalWrite(LED, 0);
       wifi_connect();
-
+      //digitalWrite(LED, 0);
       //init and get the time
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printLocalTime();
@@ -176,6 +184,8 @@ void wakeup_reason()
 
       clearRainfall();
       readBattery(&environment);
+      WiFi.disconnect();
+      delay(5000);
       break;
   }
 }

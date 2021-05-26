@@ -12,9 +12,8 @@ void Send_Data(struct sensorData *environment)
     //Blynk.virtualWrite(1, humidity ); // virtual pin 1
     //Blynk.virtualWrite(2, pressure / 100 );  // virtual pin 2
     //Blynk.virtualWrite(3, UVindex);    // virtual pin 3
-    // Blynk.virtualWrite(4, windSpeed*1.492 ); // virtual pin 4
-    //Blynk.virtualWrite(4, windSpeed * 2.4 * 4.5 ); // virtual pin 4
-    //Blynk.virtualWrite(5, windDir);    // virtual pin 5
+    Blynk.virtualWrite(V4, environment->windSpeed ); 
+    Blynk.virtualWrite(V5, environment->windDirection);    
     Blynk.virtualWrite(V6, rainfall.hourlyRainfall[hourPtr] * 0.011);
     Blynk.virtualWrite(V7, last24() * 0.011);
     //Blynk.virtualWrite(8, sensors.getTempCByIndex(0));    // virtual pin 8
