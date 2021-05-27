@@ -20,8 +20,8 @@ struct sensorData
 {
   float temperatureC;
   float temperatureF;
-  int windSpeed;
-  char windDirection[4];
+  float windSpeed;
+  float windDirection;
   float barometricPressure;
   float UVIndex;
   float LightIndex;
@@ -45,8 +45,8 @@ struct historicalData
 
 #define LED           2  //Diagnostics using built-in LED
 
-#define US 1E6
-const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (300s)
+#define SEC 1E6
+const int UpdateIntervalSeconds = 1 * 15;  //Sleep timer (300s)
 
 //========================= Enable Blynk or Thingspeak ===================================
 
@@ -72,20 +72,15 @@ void setup() {
   Serial.println("\nWeather station - Deep sleep version.\n");
   temperatureSensor.begin();
 
-  //Rainfall interrupt pin set up
-  pinMode(RAIN_PIN, INPUT);     // Rain sensor
-  delay(100); //possible settling time on pin to charge
-  //jh attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
-
-
   // Wind speed sensor setup. The windspeed is calculated according to the number
   //  of ticks per second. Timestamps are captured in the interrupt, and then converted
   //  into mph.
   pinMode(WIND_SPD_PIN, INPUT);     // Wind speed sensor
-  attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
+  pinMode(RAIN_PIN, INPUT);     // Rain sensor
 
   pinMode(LED, OUTPUT);
   digitalWrite(LED, 1);
+  
   wakeup_reason();
 
 
@@ -97,15 +92,14 @@ void setup() {
   // ESP32 Deep Sleep Mode
   Serial.println("Going to sleep now...\n\n\n\n\n");
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
+
+  if (UpdateIntervalModified <= 0)
+  {
+    UpdateIntervalModified = 3;
+  }
+
+  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   Serial.printf("Waking in %i seconds\n", UpdateIntervalModified);
-  if (UpdateIntervalModified > 0)
-  {
-    esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * US );
-  }
-  else
-  {
-    esp_deep_sleep_enable_timer_wakeup(3 * US);
-  }
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
 }
@@ -129,20 +123,22 @@ void wakeup_reason()
     case ESP_SLEEP_WAKEUP_EXT0 :
       Serial.println("Wakeup caused by external signal using RTC_IO");
       rainTicks++;
-      //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printTimeNextWake();
       printLocalTime();
-
       break;
     //case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
     case ESP_SLEEP_WAKEUP_TIMER :
+      //Rainfall interrupt pin set up
+
+      delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
+      attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
       Serial.println("Wakeup caused by timer");
       updateWake();
-      digitalWrite(LED, 0);
+      //digitalWrite(LED, 0);
       //connect to WiFi
       wifi_connect();
-      digitalWrite(LED, 0);
+      //digitalWrite(LED, 0);
       //init and get the time
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 

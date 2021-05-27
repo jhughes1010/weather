@@ -1,7 +1,12 @@
+// Variables used in software delay to supress spurious counts on rain_tip
+volatile unsigned long timeSinceLastTip = 0;
+volatile unsigned long validTimeSinceLastTip = 0;
+volatile unsigned long lastTip = 0;
+
+
 void clearRainfall(void)
 {
-  
-  memset(&rainfall, 0x00, sizeof(&rainfall));
+  memset(&rainfall, 0x00, sizeof(rainfall));
 }
 
 void clearRainfallHour(int hourPtr)
@@ -26,16 +31,25 @@ void printHourlyArray (void)
 int last24(void)
 {
   int hour;
-  int totalRainfall=0;
+  int totalRainfall = 0;
   for (hour = 0; hour < 24; hour++)
   {
     totalRainfall += rainfall.hourlyRainfall[hour];
   }
-  Serial.printf("Total rainfall: %i\n",totalRainfall);
+  Serial.printf("Total rainfall: %i\n", totalRainfall);
   return totalRainfall;
 }
 //ISR
 void rainTick(void)
 {
-  rainTicks++;
+
+
+  timeSinceLastTip = millis() - lastTip;
+  //software debounce attempt
+  if (timeSinceLastTip > 400)
+  {
+    validTimeSinceLastTip = timeSinceLastTip;
+    rainTicks++;
+    lastTip = millis();
+  }
 }

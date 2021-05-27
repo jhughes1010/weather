@@ -22,9 +22,8 @@ void wifi_connect()
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
     Serial.printf("Connecting to %s\n", App);
-    digitalWrite(LED, 0);
-    Blynk.begin(auth, ssid, pass);
     //digitalWrite(LED, 0);
+    Blynk.begin(auth, ssid, pass);
   }
   else if (App == "Thingspeak")  // for posting datas to Thingspeak website
   {
