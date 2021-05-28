@@ -25,8 +25,8 @@ void readWindSpeed(struct sensorData *environment )
   {
     windSpeed = 0;
   }
-  Serial.printf("WindSpeed time period: %i\n", validTimeSinceLastTick);
-  Serial.printf("WindSpeed: %f\n", windSpeed);
+  MonPrintf("WindSpeed time period: %i\n", validTimeSinceLastTick);
+  MonPrintf("WindSpeed: %f\n", windSpeed);
   //Serial.printf("windTick: %i\n", windTickCnt);
   windSpeed = int((windSpeed+.5)*10)/10;
   environment->windSpeed = windSpeed;
@@ -51,7 +51,7 @@ void readWindDirection(struct sensorData *environment)
       break;
     }
   }
-  Serial.printf("Analog value: %i Wind direction: %s  \n", vin, windDirection);
+  MonPrintf("Analog value: %i Wind direction: %s  \n", vin, windDirection);
   windDirection.toCharArray(buffer, 5);
   environment->windDirection = atof(buffer);
 }

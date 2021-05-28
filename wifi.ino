@@ -21,7 +21,7 @@ void wifi_connect()
 {
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
-    Serial.printf("Connecting to %s\n", App);
+    MonPrintf("Connecting to %s\n", App);
     //digitalWrite(LED, 0);
     Blynk.begin(auth, ssid, pass);
   }
@@ -34,14 +34,13 @@ void wifi_connect()
       delay(500);
       //  Serial.print(".");
     }
-    Serial.println("");
-    Serial.println("WiFi connected");
+    MonPrintf("WiFi connected\n");
   }
   else
   {
     WiFi.begin(ssid, pass);
     //Serial.print(App);
-    Serial.println(" is not a valid application");
+    MonPrintf(" is not a valid application");
   }
 
 }

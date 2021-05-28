@@ -5,6 +5,7 @@
 #include <BlynkSimpleEsp32.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
+#include <stdarg.h>
 
 //externs
 extern const char* ntpServer;
@@ -45,8 +46,9 @@ struct historicalData
 
 #define LED           2  //Diagnostics using built-in LED
 
+#define SerialMonitor
 #define SEC 1E6
-const int UpdateIntervalSeconds = 1 * 15;  //Sleep timer (300s)
+const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
 
 //========================= Enable Blynk or Thingspeak ===================================
 
@@ -69,28 +71,19 @@ void setup() {
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
   delay(25);
-  Serial.println("\nWeather station - Deep sleep version.\n");
+  MonPrintf("\nWeather station - Deep sleep version.\n");
+  MonPrintf("print control\n");
   temperatureSensor.begin();
 
-  // Wind speed sensor setup. The windspeed is calculated according to the number
-  //  of ticks per second. Timestamps are captured in the interrupt, and then converted
-  //  into mph.
   pinMode(WIND_SPD_PIN, INPUT);     // Wind speed sensor
   pinMode(RAIN_PIN, INPUT);     // Rain sensor
-
   pinMode(LED, OUTPUT);
   digitalWrite(LED, 1);
-  
+
   wakeup_reason();
 
-
-
-  //Prove RTC based variable is doing its job
-  Serial.print("RainTicks: ");
-  Serial.println(rainTicks);
-
   // ESP32 Deep Sleep Mode
-  Serial.println("Going to sleep now...\n\n\n\n\n");
+  MonPrintf("Going to sleep now...\n\n\n\n\n");
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
 
   if (UpdateIntervalModified <= 0)
@@ -99,7 +92,7 @@ void setup() {
   }
 
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
-  Serial.printf("Waking in %i seconds\n", UpdateIntervalModified);
+  MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
 }
@@ -121,7 +114,7 @@ void wakeup_reason()
   switch (wakeup_reason)
   {
     case ESP_SLEEP_WAKEUP_EXT0 :
-      Serial.println("Wakeup caused by external signal using RTC_IO");
+      MonPrintf("Wakeup caused by external signal using RTC_IO");
       rainTicks++;
       printTimeNextWake();
       printLocalTime();
@@ -152,7 +145,7 @@ void wakeup_reason()
       readWindDirection(&environment);
       readTemperature(&environment);
       //move rainTicks into hourly containers
-      Serial.printf("Current Hour: %i\n\n", timeinfo.tm_hour);
+      MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
       addTipsToHour(rainTicks);
       clearRainfallHour(timeinfo.tm_hour + 1);
       rainTicks = 0;
@@ -167,7 +160,7 @@ void wakeup_reason()
     //case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
     default :
-      Serial.printf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
+      MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
 
       //connect to WiFi
       //digitalWrite(LED, 0);
@@ -184,4 +177,18 @@ void wakeup_reason()
       delay(5000);
       break;
   }
+}
+
+//#include <stdio.h>
+
+
+void MonPrintf( const char* format, ... ) {
+  char buffer[200];
+  va_list args;
+  va_start(args, format);
+  vsprintf(buffer, format, args);
+  va_end( args );
+#ifdef SerialMonitor
+  Serial.printf("%s", buffer);
+#endif
 }

@@ -25,7 +25,7 @@ void printHourlyArray (void)
   int hourCount = 0;
   for (hourCount = 0; hourCount < 24; hourCount++)
   {
-    Serial.printf("Hour %i: %u\n", hourCount, rainfall.hourlyRainfall[hourCount]);
+    MonPrintf("Hour %i: %u\n", hourCount, rainfall.hourlyRainfall[hourCount]);
   }
 }
 int last24(void)
@@ -36,7 +36,7 @@ int last24(void)
   {
     totalRainfall += rainfall.hourlyRainfall[hour];
   }
-  Serial.printf("Total rainfall: %i\n", totalRainfall);
+  MonPrintf("Total rainfall: %i\n", totalRainfall);
   return totalRainfall;
 }
 //ISR
