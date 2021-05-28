@@ -32,7 +32,6 @@ void wifi_connect()
     while (WiFi.status() != WL_CONNECTED)
     {
       delay(500);
-      //  Serial.print(".");
     }
     MonPrintf("WiFi connected\n");
   }
@@ -42,5 +41,4 @@ void wifi_connect()
     //Serial.print(App);
     MonPrintf(" is not a valid application");
   }
-
 }

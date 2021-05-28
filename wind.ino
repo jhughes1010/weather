@@ -4,7 +4,6 @@
 volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long validTimeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
-//volatile int windTickCnt = 0;
 
 
 void readWindSpeed(struct sensorData *environment )
@@ -27,7 +26,6 @@ void readWindSpeed(struct sensorData *environment )
   }
   MonPrintf("WindSpeed time period: %i\n", validTimeSinceLastTick);
   MonPrintf("WindSpeed: %f\n", windSpeed);
-  //Serial.printf("windTick: %i\n", windTickCnt);
   windSpeed = int((windSpeed+.5)*10)/10;
   environment->windSpeed = windSpeed;
 }
@@ -65,7 +63,6 @@ void windTick(void)
   if (timeSinceLastTick > 10)
   {
     validTimeSinceLastTick = timeSinceLastTick;
-    //windTickCnt++;
     lastTick = millis();
   }
 }

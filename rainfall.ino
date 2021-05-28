@@ -42,8 +42,6 @@ int last24(void)
 //ISR
 void rainTick(void)
 {
-
-
   timeSinceLastTip = millis() - lastTip;
   //software debounce attempt
   if (timeSinceLastTip > 400)

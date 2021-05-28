@@ -62,11 +62,6 @@ RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
 
-
-//globals
-//int temperature;
-
-
 void setup() {
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
@@ -75,8 +70,8 @@ void setup() {
   MonPrintf("print control\n");
   temperatureSensor.begin();
 
-  pinMode(WIND_SPD_PIN, INPUT);     // Wind speed sensor
-  pinMode(RAIN_PIN, INPUT);     // Rain sensor
+  pinMode(WIND_SPD_PIN, INPUT);    
+  pinMode(RAIN_PIN, INPUT);     
   pinMode(LED, OUTPUT);
   digitalWrite(LED, 1);
 
@@ -85,7 +80,6 @@ void setup() {
   // ESP32 Deep Sleep Mode
   MonPrintf("Going to sleep now...\n\n\n\n\n");
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
-
   if (UpdateIntervalModified <= 0)
   {
     UpdateIntervalModified = 3;
@@ -128,17 +122,11 @@ void wakeup_reason()
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
       Serial.println("Wakeup caused by timer");
       updateWake();
-      //digitalWrite(LED, 0);
-      //connect to WiFi
       wifi_connect();
-      //digitalWrite(LED, 0);
-      //init and get the time
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-
       printTimeNextWake();
       printLocalTime();
-
-
+      
       //read sensors
       readBattery(&environment);
       readWindSpeed(&environment);
@@ -149,11 +137,9 @@ void wakeup_reason()
       addTipsToHour(rainTicks);
       clearRainfallHour(timeinfo.tm_hour + 1);
       rainTicks = 0;
-      //jh printHourlyArray();
-      //send sensor data
+      
+      //send sensor data to IOT destination
       Send_Data(&environment);
-
-      //reset rainTicks to 0 as number has been added to hourly totals
       WiFi.disconnect();
       delay(5000);
       break;
@@ -161,26 +147,16 @@ void wakeup_reason()
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-
-      //connect to WiFi
-      //digitalWrite(LED, 0);
       wifi_connect();
-      //digitalWrite(LED, 0);
-      //init and get the time
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printLocalTime();
       updateWake();
-
       clearRainfall();
-      readBattery(&environment);
       WiFi.disconnect();
       delay(5000);
       break;
   }
 }
-
-//#include <stdio.h>
-
 
 void MonPrintf( const char* format, ... ) {
   char buffer[200];

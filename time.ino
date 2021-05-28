@@ -17,7 +17,6 @@ void printLocalTime()
 
 void printTimeNextWake( void)
 {
-  //struct tm timeinfo;
   getLocalTime(&timeinfo);
   MonPrintf("Time to next wake: %i seconds\n", nextUpdate);
 }
