@@ -18,6 +18,7 @@ void Send_Data(struct sensorData *environment)
     Blynk.virtualWrite(V7, last24() * 0.011);
     //Blynk.virtualWrite(8, sensors.getTempCByIndex(0));    // virtual pin 8
     Blynk.virtualWrite(V9, environment->batteryVoltage);
+    Blynk.virtualWrite(V10, environment->lux);
     delay(1000);
   }
 

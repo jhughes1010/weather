@@ -3,13 +3,17 @@ DallasTemperature temperatureSensor(&oneWire);
 
 
 //Entry point for all sensor data reading
-int readSensors( void)
+void readSensors(struct sensorData *environment)
 {
-
+  readBattery(environment);
+  readWindSpeed(environment);
+  readWindDirection(environment);
+  readTemperature(environment);
+  readLux(environment);
 }
 void readTemperature (struct sensorData *environment)
 {
-  MonPrintf("Requesting temperatures...");
+  MonPrintf("Requesting temperatures...\n");
   temperatureSensor.requestTemperatures();
   MonPrintf("DONE");
   environment->temperatureC = temperatureSensor.getTempCByIndex(0);
@@ -39,4 +43,10 @@ void readBattery (struct sensorData *environment)
   Vout = (val * 3.3 ) / 4095.0; // formula for calculating voltage out
   environment->batteryVoltage = (float)Vout * ( R2 + R1) / R2 ; // formula for calculating voltage in
   MonPrintf("Battery digital :%i percentage: %6.2f\n", val, environment->batteryVoltage);
+}
+
+void readLux(struct sensorData *environment)
+{
+  environment->lux = lightMeter.readLightLevel();
+  MonPrintf("LUX value: %6.2f\n", environment->lux);
 }

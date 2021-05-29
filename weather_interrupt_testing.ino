@@ -5,6 +5,8 @@
 #include <BlynkSimpleEsp32.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
+#include "Wire.h"
+#include <BH1750.h>
 #include <stdarg.h>
 
 //externs
@@ -25,7 +27,7 @@ struct sensorData
   float windDirection;
   float barometricPressure;
   float UVIndex;
-  float LightIndex;
+  float lux;
   float batteryVoltage;
 };
 
@@ -62,12 +64,16 @@ RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
 
+BH1750 lightMeter(0x23);
+
 void setup() {
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
   delay(25);
   MonPrintf("\nWeather station - Deep sleep version.\n");
   MonPrintf("print control\n");
+  Wire.begin();
+  lightMeter.begin();
   temperatureSensor.begin();
 
   pinMode(WIND_SPD_PIN, INPUT);    
@@ -128,10 +134,8 @@ void wakeup_reason()
       printLocalTime();
       
       //read sensors
-      readBattery(&environment);
-      readWindSpeed(&environment);
-      readWindDirection(&environment);
-      readTemperature(&environment);
+      readSensors(&environment);
+   
       //move rainTicks into hourly containers
       MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
       addTipsToHour(rainTicks);

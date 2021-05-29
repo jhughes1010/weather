@@ -12,7 +12,7 @@ void printLocalTime()
     return;
   }
   //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S\n");
-  MonPrintf("Date:%i %i %i Time: %i:%i:%i", timeinfo.tm_mday, timeinfo.tm_mon, timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+  MonPrintf("Date:%i %i %i Time: %i:%i:%i\n", timeinfo.tm_mday, timeinfo.tm_mon, timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 }
 
 void printTimeNextWake( void)
