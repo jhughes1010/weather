@@ -7,6 +7,8 @@
 #include <OneWire.h>
 #include "Wire.h"
 #include <BH1750.h>
+#include <BME280I2C.h>
+#include "Adafruit_SI1145.h"
 #include <stdarg.h>
 
 //externs
@@ -26,6 +28,8 @@ struct sensorData
   float windSpeed;
   float windDirection;
   float barometricPressure;
+  float BMEtemperature;
+  float humidity;
   float UVIndex;
   float lux;
   float batteryVoltage;
@@ -50,8 +54,8 @@ struct historicalData
 
 #define SerialMonitor
 #define SEC 1E6
-const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
-
+//const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
+const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
 //========================= Enable Blynk or Thingspeak ===================================
 
 // configuration control constant for use of either Blynk or Thingspeak
@@ -65,6 +69,7 @@ RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
 
 BH1750 lightMeter(0x23);
+BME280I2C bme;
 
 void setup() {
   int UpdateIntervalModified = 0;
@@ -76,8 +81,8 @@ void setup() {
   lightMeter.begin();
   temperatureSensor.begin();
 
-  pinMode(WIND_SPD_PIN, INPUT);    
-  pinMode(RAIN_PIN, INPUT);     
+  pinMode(WIND_SPD_PIN, INPUT);
+  pinMode(RAIN_PIN, INPUT);
   pinMode(LED, OUTPUT);
   digitalWrite(LED, 1);
 
@@ -132,16 +137,16 @@ void wakeup_reason()
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printTimeNextWake();
       printLocalTime();
-      
+
       //read sensors
       readSensors(&environment);
-   
+
       //move rainTicks into hourly containers
       MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
       addTipsToHour(rainTicks);
       clearRainfallHour(timeinfo.tm_hour + 1);
       rainTicks = 0;
-      
+
       //send sensor data to IOT destination
       Send_Data(&environment);
       WiFi.disconnect();
