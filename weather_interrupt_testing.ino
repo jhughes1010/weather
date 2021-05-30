@@ -54,8 +54,8 @@ struct historicalData
 
 #define SerialMonitor
 #define SEC 1E6
-//const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
-const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
+const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
+//const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
 //========================= Enable Blynk or Thingspeak ===================================
 
 // configuration control constant for use of either Blynk or Thingspeak
