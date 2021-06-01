@@ -34,32 +34,40 @@ void SendDataMQTT (struct sensorData *environment)
     }
   }
 
-  MQTTPublishInt("RoyalGorge/temperatureF/", (int)environment->temperatureF, true);
-  MQTTPublishInt("RoyalGorge/temperatureC/", (int)environment->temperatureC, true);
-  MQTTPublishFloat("RoyalGorge/rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
-  MQTTPublishFloat("RoyalGorge/rainfall24/", last24() * 0.011, true);
-  MQTTPublishInt("RoyalGorge/windSpeed/", (int)environment->windSpeed, true);
-  MQTTPublishInt("RoyalGorge/windDirection/", (int)environment->windDirection, true);
+  MQTTPublishInt("RoyalGorge/temperatureF/", (int)environment->temperatureF, false);
+  MQTTPublishInt("RoyalGorge/temperatureC/", (int)environment->temperatureC, false);
+  MQTTPublishFloat("RoyalGorge/rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, false);
+  MQTTPublishFloat("RoyalGorge/rainfall24/", last24() * 0.011, false);
+  MQTTPublishInt("RoyalGorge/windSpeed/", (int)environment->windSpeed, false);
+  MQTTPublishInt("RoyalGorge/windDirection/", (int)environment->windDirection, false);
 
-  MQTTPublishFloat("RoyalGorge/batteryVoltage/", environment->batteryVoltage, true);
-  MQTTPublishFloat("RoyalGorge/lux/", environment->lux, true);
-  delay(5000);
+  MQTTPublishFloat("RoyalGorge/batteryVoltage/", environment->batteryVoltage, false);
+  MQTTPublishFloat("RoyalGorge/lux/", environment->lux, false);
+  MonPrintf("Issuing mqtt disconnect\n");
+  client.disconnect();
+  MonPrintf("Disconnected\n");
 }
 
 void MQTTPublishInt(const char topic[], int value, bool retain)
 {
+  int status = 0;
   char buffer[256];
 
   sprintf(buffer, "%i", value);
-  client.publish(topic, buffer, retain);
+  MonPrintf("%s: %s\n", topic, buffer);
+  status = client.publish(topic, buffer, retain);
+  MonPrintf("MQTT status: %i\n", status);
   delay(1000);
 }
 
 void MQTTPublishFloat(const char topic[], float value, bool retain)
 {
+  int status = 0;
   char buffer[256];
 
   sprintf(buffer, "%06.3f", value);
-  client.publish(topic, buffer, retain);
+  MonPrintf("%s: %s\n", topic, buffer);
+  status = client.publish(topic, buffer, retain);
+  MonPrintf("MQTT status: %i\n", status);
   delay(1000);
 }
