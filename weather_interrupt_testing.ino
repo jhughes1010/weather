@@ -10,6 +10,8 @@
 #include <BME280I2C.h>
 #include "Adafruit_SI1145.h"
 #include <stdarg.h>
+//mqtt
+#include <PubSubClient.h>
 
 //externs
 extern const char* ntpServer;
@@ -149,6 +151,7 @@ void wakeup_reason()
 
       //send sensor data to IOT destination
       Send_Data(&environment);
+      SendDataMQTT(&environment);
       WiFi.disconnect();
       delay(5000);
       break;
