@@ -34,15 +34,18 @@ void SendDataMQTT (struct sensorData *environment)
     }
   }
 
-  MQTTPublishInt("RoyalGorge/temperatureF/", (int)environment->temperatureF, false);
-  MQTTPublishInt("RoyalGorge/temperatureC/", (int)environment->temperatureC, false);
-  MQTTPublishFloat("RoyalGorge/rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, false);
-  MQTTPublishFloat("RoyalGorge/rainfall24/", last24() * 0.011, false);
-  MQTTPublishInt("RoyalGorge/windSpeed/", (int)environment->windSpeed, false);
-  MQTTPublishInt("RoyalGorge/windDirection/", (int)environment->windDirection, false);
+  MQTTPublishInt("RoyalGorge/temperatureF/", (int)environment->temperatureF, true);
+  MQTTPublishInt("RoyalGorge/temperatureC/", (int)environment->temperatureC, true);
+  MQTTPublishInt("RoyalGorge/windSpeed/", (int)environment->windSpeed, true);
+  MQTTPublishInt("RoyalGorge/windDirection/", (int)environment->windDirection, true);
+  MQTTPublishFloat("RoyalGorge/rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
+  MQTTPublishFloat("RoyalGorge/rainfall24/", last24() * 0.011, true);
 
-  MQTTPublishFloat("RoyalGorge/batteryVoltage/", environment->batteryVoltage, false);
-  MQTTPublishFloat("RoyalGorge/lux/", environment->lux, false);
+
+  MQTTPublishFloat("RoyalGorge/batteryVoltage/", environment->batteryVoltage, true);
+  MQTTPublishFloat("RoyalGorge/lux/", environment->lux, true);
+  MQTTPublishFloat("RoyalGorge/relHum/", environment->humidity, true);
+  MQTTPublishFloat("RoyalGorge/pressure/", environment->barometricPressure, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
@@ -50,24 +53,54 @@ void SendDataMQTT (struct sensorData *environment)
 
 void MQTTPublishInt(const char topic[], int value, bool retain)
 {
+  int retryCount = 0;
   int status = 0;
   char buffer[256];
-
+  if(!client.connected()) reconnect();
+  client.loop();
   sprintf(buffer, "%i", value);
   MonPrintf("%s: %s\n", topic, buffer);
-  status = client.publish(topic, buffer, retain);
-  MonPrintf("MQTT status: %i\n", status);
-  delay(1000);
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topic, buffer, retain);
+    MonPrintf("MQTT status: %i\n", status);
+    delay(50);
+    retryCount++;
+  }
 }
 
 void MQTTPublishFloat(const char topic[], float value, bool retain)
 {
+  int retryCount = 0;
   int status = 0;
   char buffer[256];
-
-  sprintf(buffer, "%06.3f", value);
+  if(!client.connected()) reconnect();
+  client.loop();
+  sprintf(buffer, "%6.3f", value);
   MonPrintf("%s: %s\n", topic, buffer);
-  status = client.publish(topic, buffer, retain);
-  MonPrintf("MQTT status: %i\n", status);
-  delay(1000);
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topic, buffer, retain);
+    MonPrintf("MQTT status: %i\n", status);
+    delay(50);
+    retryCount++;
+  }
+}
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect("ESP32Client")) {
+      Serial.println("connected");
+
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
 }

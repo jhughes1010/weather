@@ -5,12 +5,12 @@ DallasTemperature temperatureSensor(&oneWire);
 //Entry point for all sensor data reading
 void readSensors(struct sensorData *environment)
 {
-  readBattery(environment);
   readWindSpeed(environment);
   readWindDirection(environment);
   readTemperature(environment);
   readLux(environment);
   readBME(environment);
+  readBattery(environment);
 }
 void readTemperature (struct sensorData *environment)
 {
@@ -37,13 +37,15 @@ void readBattery (struct sensorData *environment)
 {
   int val;
   float Vout;
-  const int R1 = 27000;
-  const int R2 = 100000;
+  //float Vbat;
+  const int R1 = 33000*1.05;
+  const int R2 = 100000*.95;
   // Reading Battery Level in %
   val = analogRead(VOLT_PIN);
-  Vout = (val * 3.3 ) / 4095.0; // formula for calculating voltage out
-  environment->batteryVoltage = (float)Vout * ( R2 + R1) / R2 ; // formula for calculating voltage in
-  MonPrintf("Battery digital :%i percentage: %6.2f\n", val, environment->batteryVoltage);
+  //Vout = (val * 3.3 ) / 4095.0; // formula for calculating voltage out
+  //environment->batteryVoltage = (float)Vout * ( R2 + R1) / R2 ; // formula for calculating voltage in
+  environment->batteryVoltage = val*.001009;
+  MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
 }
 
 void readLux(struct sensorData *environment)

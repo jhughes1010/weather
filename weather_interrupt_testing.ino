@@ -56,8 +56,8 @@ struct historicalData
 
 #define SerialMonitor
 #define SEC 1E6
-//const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
-const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
+const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (300s)
+//const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
 //========================= Enable Blynk or Thingspeak ===================================
 
 // configuration control constant for use of either Blynk or Thingspeak
@@ -74,12 +74,14 @@ BH1750 lightMeter(0x23);
 BME280I2C bme;
 
 void setup() {
+  
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
   delay(25);
   MonPrintf("\nWeather station - Deep sleep version.\n");
   MonPrintf("print control\n");
   Wire.begin();
+  bme.begin();
   lightMeter.begin();
   temperatureSensor.begin();
 
