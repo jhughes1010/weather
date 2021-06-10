@@ -1,20 +1,23 @@
 /* I have an untracked file called secrets.h with the following code
-  //========================= Variables for wifi server setup =============================
+/*
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "yourSSID"; // WiFi Router ssid
+char pass[] = "password"; // WiFi Router password
 
-  // Your WiFi credentials.
-  // Set password to "" for open networks.
-  char ssid[] = "your_ssid_here"; // WiFi Router ssid
-  char pass[] = "your_secret_here"; // WiFi Router password
+// copy it from the mail received from Blynk
+char auth[] = "APIKey";
+//const char* server = "api.thingspeak.com";
 
-  // copy it from the mail received from Blynk
-  char auth[] = "your_secret_here";
-  //const char* server = "api.thingspeak.com";
+// Thingspeak Write API
+const char* server = "api.thingspeak.com";
+const char* api_key = "APIKey"; // API write key
 
-  // Thingspeak Write API
-  const char* server = "api.thingspeak.com";
-  const char* api_key = "your_secret_here"; // API write key
+//MQTT server connect details
+const char* mqttServer = "test.mosquitto.org";
+const int mqttPort = 1883;
+const char mainTopic[20] = "RoyalGorge/";  //change to your desired MQTT main topic
 */
-
 //============================ Connect to WiFi Network =========================================
 
 void wifi_connect()

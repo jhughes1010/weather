@@ -56,8 +56,8 @@ struct historicalData
 
 #define SerialMonitor
 #define SEC 1E6
-const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (300s)
-//const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
+//const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (300s)
+const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
 //========================= Enable Blynk or Thingspeak ===================================
 
 // configuration control constant for use of either Blynk or Thingspeak
@@ -72,9 +72,10 @@ RTC_DATA_ATTR struct historicalData rainfall;
 
 BH1750 lightMeter(0x23);
 BME280I2C bme;
+Adafruit_SI1145 uv = Adafruit_SI1145();
 
 void setup() {
-  
+
   int UpdateIntervalModified = 0;
   Serial.begin(115200);
   delay(25);
@@ -130,8 +131,16 @@ void wakeup_reason()
       break;
     //case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
     case ESP_SLEEP_WAKEUP_TIMER :
-      //Rainfall interrupt pin set up
+      if (! uv.begin()) {
+        Serial.println("Didn't find Si1145");
+        while (1);
+      }
+      if (! bme.begin()) {
+        Serial.println("Didn't find BME280");
+        while (1);
+      }
 
+      //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
