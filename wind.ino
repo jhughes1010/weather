@@ -8,25 +8,27 @@ volatile unsigned long lastTick = 0;
 
 void readWindSpeed(struct sensorData *environment )
 {
-  float windSpeed=0;
+  float windSpeed = 0;
   if (validTimeSinceLastTick != 0)
   {
     windSpeed = 1.49 * 1000 / validTimeSinceLastTick;
     //I see 2 ticks per revolution
-    windSpeed = windSpeed / 2;
+    windSpeed = windSpeed / WIND_TICKS_PER_REVOLUTION;
     if (windSpeed > 100)
     {
       windSpeed = 100;
     }
   }
-
   else
   {
     windSpeed = 0;
   }
+#ifdef METRIC
+  windSpeed =  windSpeed * 1.60934;
+#endif
   MonPrintf("WindSpeed time period: %i\n", validTimeSinceLastTick);
   MonPrintf("WindSpeed: %f\n", windSpeed);
-  windSpeed = int((windSpeed+.5)*10)/10;
+  windSpeed = int((windSpeed + .5) * 10) / 10;
   environment->windSpeed = windSpeed;
 }
 
@@ -34,7 +36,7 @@ void readWindSpeed(struct sensorData *environment )
 void readWindDirection(struct sensorData *environment)
 {
   int windPosition;
-  String windDirection = "N";
+  String windDirection = "0";
   int analogCompare[15] = {150, 300, 450, 600, 830, 1100, 1500, 1700, 2250, 2350, 2700, 3000, 3200, 3400, 3900};
   //String windDirText[15] = {"SSW", "S", "WSW", "3", "SW", "W", "6", "ESE", "SE", "NNW", "NW", "ENE", "E", "NNE", "NE"}; //BLYNK does not seem to allow text
   String windDirText[15] = {"202.5", "180", "247.5", "000", "225", "270", "000", "112.5", "135", "337.5", "315", "67.5", "90", "22.5", "45"};

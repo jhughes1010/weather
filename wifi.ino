@@ -17,6 +17,13 @@ const char* api_key = "APIKey"; // API write key
 const char* mqttServer = "test.mosquitto.org";
 const int mqttPort = 1883;
 const char mainTopic[20] = "RoyalGorge/";  //change to your desired MQTT main topic
+
+//non-secret settings
+#define METRIC
+//I see 2 ticks per revolution on my anemometer
+#define WIND_TICKS_PER_REVOLUTION 2
+const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (900s)
+//const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
 */
 //============================ Connect to WiFi Network =========================================
 

@@ -8,17 +8,25 @@ void Send_Data(struct sensorData *environment)
 
   if (App == "BLYNK") { // choose application
     //Data assigned to Blynk virtual pins
-    //jh choose to send F or C 
-    Blynk.virtualWrite(V0, environment->temperatureC );
-    //Blynk.virtualWrite(V0, environment->temperatureF );
+    //jh choose to send F or C
+
+
     Blynk.virtualWrite(V1, environment->humidity );
-    Blynk.virtualWrite(V2, environment->barometricPressure / 100 );  
-    Blynk.virtualWrite(V3, environment->UVIndex);    
-    Blynk.virtualWrite(V4, environment->windSpeed ); 
-    Blynk.virtualWrite(V5, environment->windDirection);    
+    Blynk.virtualWrite(V2, environment->barometricPressure / 100 );
+    Blynk.virtualWrite(V3, environment->UVIndex);
+    Blynk.virtualWrite(V4, environment->windSpeed );
+    Blynk.virtualWrite(V5, environment->windDirection);
+#ifndef METRIC
+    Blynk.virtualWrite(V0, environment->temperatureF );
     Blynk.virtualWrite(V6, rainfall.hourlyRainfall[hourPtr] * 0.011);
     Blynk.virtualWrite(V7, last24() * 0.011);
-    Blynk.virtualWrite(V8, environment->BMEtemperature); 
+#else
+    Blynk.virtualWrite(V0, environment->temperatureC );
+    Blynk.virtualWrite(V6, rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4);
+    Blynk.virtualWrite(V7, last24() * 0.011 * 25.4);
+#endif
+
+    Blynk.virtualWrite(V8, environment->BMEtemperature);
     //Blynk.virtualWrite(V8, sensors.getTempCByIndex(0));   //ESP based sensor???
     Blynk.virtualWrite(V9, environment->batteryVoltage);
     Blynk.virtualWrite(V10, environment->lux);
