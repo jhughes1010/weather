@@ -37,9 +37,13 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
   MQTTPublishInt("windSpeed/", (int)environment->windSpeed, true);
   MQTTPublishInt("windDirection/", (int)environment->windDirection, true);
+#ifndef METRIC
   MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
   MQTTPublishFloat("rainfall24/", last24() * 0.011, true);
-
+#else
+  MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4, true);
+  MQTTPublishFloat("rainfall24/", last24() * 0.011 * 25.4, true);
+#endif
 
   MQTTPublishFloat("batteryVoltage/", environment->batteryVoltage, true);
   MQTTPublishFloat("lux/", environment->lux, true);
@@ -57,7 +61,7 @@ void MQTTPublishInt(const char topic[], int value, bool retain)
   char payload[256];
   int retryCount = 0;
   int status = 0;
-  
+
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
@@ -79,7 +83,7 @@ void MQTTPublishFloat(const char topic[], float value, bool retain)
   char payload[256];
   int retryCount = 0;
   int status = 0;
-  
+
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
