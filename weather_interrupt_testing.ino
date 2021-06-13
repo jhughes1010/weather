@@ -80,7 +80,7 @@ RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
 
 //===========================================
-// Defines
+// Global instantiation
 //===========================================
 BH1750 lightMeter(0x23);
 BME280I2C bme;
