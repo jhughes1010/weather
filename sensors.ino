@@ -1,7 +1,9 @@
 OneWire oneWire(TEMP_PIN);
 DallasTemperature temperatureSensor(&oneWire);
 
-
+//=======================================================
+//  readSensors: Read all sensors and battery voltage
+//=======================================================
 //Entry point for all sensor data reading
 void readSensors(struct sensorData *environment)
 {
@@ -14,6 +16,9 @@ void readSensors(struct sensorData *environment)
   readBattery(environment);
 }
 
+//=======================================================
+//  readTemperature: Read 1W DS1820B
+//=======================================================
 void readTemperature (struct sensorData *environment)
 {
   MonPrintf("Requesting temperatures...\n");
@@ -35,41 +40,49 @@ void readTemperature (struct sensorData *environment)
   }
 }
 
+//=======================================================
+//  readBattery: read analog volatage divider value
+//=======================================================
 void readBattery (struct sensorData *environment)
 {
   int val;
   float Vout;
-  //float Vbat;
-  const int R1 = 33000 * 1.05;
-  const int R2 = 100000 * .95;
-  // Reading Battery Level in %
   val = analogRead(VOLT_PIN);
-  //Vout = (val * 3.3 ) / 4095.0; // formula for calculating voltage out
-  //environment->batteryVoltage = (float)Vout * ( R2 + R1) / R2 ; // formula for calculating voltage in
-  environment->batteryVoltage = val * .001009;
+  //this value may need tweaking for your voltage divider
+  //cabibration = 4.2V/analog value read @ 4.2V
+  environment->batteryVoltage = val * .001025;
   MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
 }
 
+//=======================================================
+//  readLux: LUX sensor read
+//=======================================================
 void readLux(struct sensorData *environment)
 {
   environment->lux = lightMeter.readLightLevel();
   MonPrintf("LUX value: %6.2f\n", environment->lux);
 }
 
+//=======================================================
+//  readBME: BME sensor read
+//=======================================================
 void readBME(struct sensorData *environment)
 {
-  #ifndef METRIC
-    bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Fahrenheit, BME280::PresUnit_inHg);
-  #else
-    bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
-  #endif
+#ifndef METRIC
+  bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Fahrenheit, BME280::PresUnit_inHg);
+#else
+  bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+#endif
   MonPrintf("BME barometric pressure: %6.2f  BME temperature: %6.2f  BME humidity: %6.2f\n", environment->barometricPressure, environment->BMEtemperature, environment->humidity);
 }
 
+//=======================================================
+//  readUV: get implied uv sensor value
+//=======================================================
 void readUV(struct sensorData *environment)
 {
   environment->UVIndex = uv.readUV() / 100;
   MonPrintf("UV Index: %f\n", environment->UVIndex);
-  MonPrintf("Vis: %i\n",uv.readVisible());
-  MonPrintf("IR: %i\n",uv.readIR());
+  MonPrintf("Vis: %i\n", uv.readVisible());
+  MonPrintf("IR: %i\n", uv.readIR());
 }

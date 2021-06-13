@@ -5,7 +5,9 @@ volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long validTimeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
 
-
+//=======================================================
+//  readWindSpeed: Single instantaneous measurement of wind speed
+//=======================================================
 void readWindSpeed(struct sensorData *environment )
 {
   float windSpeed = 0;
@@ -32,6 +34,9 @@ void readWindSpeed(struct sensorData *environment )
   environment->windSpeed = windSpeed;
 }
 
+//=======================================================
+//  readWindDirection: Read ADC to find wind direction
+//=======================================================
 //This function is in testing mode now
 void readWindDirection(struct sensorData *environment)
 {
@@ -56,7 +61,9 @@ void readWindDirection(struct sensorData *environment)
   environment->windDirection = atof(buffer);
 }
 
-
+//=======================================================
+//  windTick: ISR to capture wind speed relay closure
+//=======================================================
 //ISR
 void windTick(void)
 {

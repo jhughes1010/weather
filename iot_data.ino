@@ -1,7 +1,9 @@
 extern const char* server;
 extern const char* api_key;
-
-void Send_Data(struct sensorData *environment)
+//=======================================================================
+//  sendData: all sensor data in structure is sent to Blynk or Thingspeak
+//=======================================================================
+void sendData(struct sensorData *environment)
 {
   int hourPtr = timeinfo.tm_hour;
   // code block for uploading data to BLYNK App
@@ -75,7 +77,6 @@ void Send_Data(struct sensorData *environment)
       client.print(postStr);
       Serial.println(postStr);
       delay(5000);
-      //*******************************************************************************
     }
   }
 }

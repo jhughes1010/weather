@@ -6,6 +6,9 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 
+//=======================================================================
+//  SendDataMQTT: send MQTT data to broker with 'retain' flag set to TRUE
+//=======================================================================
 void SendDataMQTT (struct sensorData *environment)
 {
   char bufferTempF[5];
@@ -55,6 +58,9 @@ void SendDataMQTT (struct sensorData *environment)
   MonPrintf("Disconnected\n");
 }
 
+//=======================================================================
+//  MQTTPublishInt: routine to publish int values as strings
+//=======================================================================
 void MQTTPublishInt(const char topic[], int value, bool retain)
 {
   char topicBuffer[256];
@@ -77,6 +83,9 @@ void MQTTPublishInt(const char topic[], int value, bool retain)
   }
 }
 
+//=======================================================================
+//  MQTTPublishFloat: routine to publish float values as strings
+//=======================================================================
 void MQTTPublishFloat(const char topic[], float value, bool retain)
 {
   char topicBuffer[256];
@@ -99,6 +108,9 @@ void MQTTPublishFloat(const char topic[], float value, bool retain)
   }
 }
 
+//=======================================================================
+//  reconnect: MQTT reconnect
+//=======================================================================
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {

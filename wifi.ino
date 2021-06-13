@@ -1,38 +1,72 @@
 /* I have an untracked file called secrets.h with the following code
-/*
-// Your WiFi credentials.
-// Set password to "" for open networks.
-char ssid[] = "yourSSID"; // WiFi Router ssid
-char pass[] = "password"; // WiFi Router password
+  /*
+  //=============================================================
+  //Variables for wifi server setup and api keys for IOT
+  //Constants for WAKE frequency and UOM for sensors
+  //=============================================================
 
-// copy it from the mail received from Blynk
-char auth[] = "APIKey";
-//const char* server = "api.thingspeak.com";
 
-// Thingspeak Write API
-const char* server = "api.thingspeak.com";
-const char* api_key = "APIKey"; // API write key
+  //-----------------------
+  //WiFi connection
+  //-----------------------
+  char ssid[] = "your ssid"; // WiFi Router ssid
+  char pass[] = "your key"; // WiFi Router password
 
-//MQTT server connect details
-const char* mqttServer = "test.mosquitto.org";
-const int mqttPort = 1883;
-const char mainTopic[20] = "RoyalGorge/";  //change to your desired MQTT main topic
+  //-----------------------
+  //Blynk connection
+  //-----------------------
+  char auth[] = "your key";
+  //const char* server = "api.blynk.com";
 
-//non-secret settings
-#define METRIC
-//I see 2 ticks per revolution on my anemometer
-#define WIND_TICKS_PER_REVOLUTION 2
-const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (900s)
-//const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
+  //-----------------------
+  //Thinkspeak connection
+  //-----------------------
+  const char* server = "api.thingspeak.com";
+  const char* api_key = "your key";
+
+  //-----------------------
+  //MQTT broker connection
+  //-----------------------
+  const char* mqttServer = "test.mosquitto.org";
+  const int mqttPort = 1883;
+  const char mainTopic[20] = "RoyalGorge/";
+
+
+  //-----------------------
+  //Metric or Imperial measurements
+  //-----------------------
+  #define METRIC
+
+  //-----------------------
+  //Anemometer Calibration
+  //-----------------------
+  //I see 2 switch pulls to GND per revolation. Not sure what others see
+  #define WIND_TICKS_PER_REVOLUTION 2
+
+  //-----------------------
+  //Set how often to wake and read sensors
+  //-----------------------
+  //const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (900s) for my normal operation
+  const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
+
+  //-----------------------
+  //Barometer Calibration
+  //-----------------------
+  #define BAROMETER_CALIBRATION_IN 6.2
+  #define BAROMETER_CALIBRATION_Pa 2000 //need sane number
 */
-//============================ Connect to WiFi Network =========================================
 
+
+
+
+//=======================================================================
+//  wifi_connect: connect to WiFi or explicitly connect to Blynk, if used
+//=======================================================================
 void wifi_connect()
 {
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
     MonPrintf("Connecting to %s\n", App);
-    //digitalWrite(LED, 0);
     Blynk.begin(auth, ssid, pass);
   }
   else if (App == "Thingspeak")  // for posting datas to Thingspeak website
@@ -48,7 +82,6 @@ void wifi_connect()
   else
   {
     WiFi.begin(ssid, pass);
-    //Serial.print(App);
     MonPrintf(" is not a valid application");
   }
 }

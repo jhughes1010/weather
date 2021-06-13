@@ -1,3 +1,12 @@
+// weather station v3.0 code that fully supports deep sleep modes
+// code rewrite by James Hughes - KB0HHM
+// jhughes1010@gmail.com
+//
+//
+
+//===========================================
+// Includes
+//===========================================
 #include "esp_deep_sleep.h"
 #include "secrets.h"
 #include <WiFi.h>
@@ -10,10 +19,25 @@
 #include <BME280I2C.h>
 #include "Adafruit_SI1145.h"
 #include <stdarg.h>
-//mqtt
 #include <PubSubClient.h>
 
-//externs
+//===========================================
+// Defines
+//===========================================
+
+#define WIND_SPD_PIN 14  //reed switch based anemometer count
+#define RAIN_PIN     25  //reed switch based tick counter on tip bucket
+#define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
+#define VOLT_PIN     33  //voltage divider for battery monitor
+#define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
+
+#define LED           2  //Diagnostics using built-in LED
+
+#define SerialMonitor
+#define SEC 1E6
+//===========================================
+// Externs
+//===========================================
 extern const char* ntpServer;
 extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
@@ -22,7 +46,9 @@ extern DallasTemperature temperatureSensor;
 //extern struct sensor;
 
 
-//data struct for instantaneous sensor values
+//===========================================
+// Custom structures
+//===========================================
 struct sensorData
 {
   float temperatureC;
@@ -44,35 +70,25 @@ struct historicalData
   unsigned int current60MinRainfall[12];
 };
 
-//=================== Pin assignment definitions ==========================================
 
-#define WIND_SPD_PIN 14  //reed switch based anemometer count
-#define RAIN_PIN     25  //reed switch based tick counter on tip bucket
-#define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
-#define VOLT_PIN     33  //voltage divider for battery monitor
-#define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
-
-#define LED           2  //Diagnostics using built-in LED
-
-#define SerialMonitor
-#define SEC 1E6
-
-//========================= Enable Blynk or Thingspeak ===================================
-
-// configuration control constant for use of either Blynk or Thingspeak
-const String App = "BLYNK";         //  alternative is line below
-//const String App = "Thingspeak"; //  alternative is line above
-
-//RTC storage
+//===========================================
+// RTC Storage
+//===========================================
 RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
 
+//===========================================
+// Defines
+//===========================================
 BH1750 lightMeter(0x23);
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 
+//===========================================
+// setup: 
+//===========================================
 void setup() {
 
   int UpdateIntervalModified = 0;
@@ -106,13 +122,21 @@ void setup() {
   esp_deep_sleep_start();
 }
 
+//===================================================
+// loop: these are not the droids you are looking for
+//===================================================
 void loop()
 {
   //no loop code
 }
 
 
-
+//===========================================================
+// wakeup_reason: action based on WAKE reason
+// 1. Power up
+// 2. WAKE on EXT0 - increment rain tip gauge count and sleep
+// 3. WAKE on TIMER - send sensor data to IOT target
+//===========================================================
 //check for WAKE reason and respond accordingly
 void wakeup_reason()
 {
@@ -160,7 +184,7 @@ void wakeup_reason()
       rainTicks = 0;
 
       //send sensor data to IOT destination
-      Send_Data(&environment);
+      sendData(&environment);
       SendDataMQTT(&environment);
       WiFi.disconnect();
       delay(5000);
@@ -180,6 +204,9 @@ void wakeup_reason()
   }
 }
 
+//===========================================
+// MonPrintf: diagnostic printf to terminal
+//===========================================
 void MonPrintf( const char* format, ... ) {
   char buffer[200];
   va_list args;
