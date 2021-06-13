@@ -7,5 +7,7 @@ Rainfall in last 24h is currently last 23h, I'll circle back and fix this when e
 
 MCU will wake for 3 reasons
 Initial power on - When device powers on, MCU will briefly connect to the WiFi to get current time. No sensors are read.
-EXT0 - ESP32 will wake on rain tip counter to increment counter and go back to sleep
-Timer - wakes at set time interval to read sensors and send to IOT data collection point
+
+EXT0 - ESP32 will wake on rain tip counter to increment counter and go back to sleep.
+
+Timer - wakes at set time interval to read sensors and send to IOT data collection point.
