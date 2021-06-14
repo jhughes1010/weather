@@ -2,7 +2,7 @@
 // code rewrite by James Hughes - KB0HHM
 // jhughes1010@gmail.com
 //
-//
+//Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
 //===========================================
 // Includes
@@ -78,6 +78,7 @@ RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
+RTC_DATA_ATTR int bootCount = 0;
 
 //===========================================
 // Global instantiation
@@ -87,7 +88,7 @@ BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 
 //===========================================
-// setup: 
+// setup:
 //===========================================
 void setup() {
 
@@ -154,6 +155,7 @@ void wakeup_reason()
       break;
     //case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
     case ESP_SLEEP_WAKEUP_TIMER :
+      bootCount++;
       if (! uv.begin()) {
         Serial.println("Didn't find Si1145");
         while (1);

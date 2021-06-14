@@ -35,7 +35,7 @@ void SendDataMQTT (struct sensorData *environment)
       delay(2000);
     }
   }
-
+  MQTTPublishInt("boot/", (int)bootCount, true);
   MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
   MQTTPublishInt("windSpeed/", (int)environment->windSpeed, true);
