@@ -14,8 +14,7 @@ void printLocalTime()
     MonPrintf("Failed to obtain time");
     return;
   }
-  //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S\n");
-  MonPrintf("Date:%i %i %i Time: %i:%i:%i\n", timeinfo.tm_mday, timeinfo.tm_mon, timeinfo.tm_year, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+  MonPrintf("Date:%02i %02i %i Time: %02i:%02i:%02i\n", timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
 }
 
 //=======================================================================
