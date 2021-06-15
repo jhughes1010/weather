@@ -9,6 +9,7 @@
 //===========================================
 #include "esp_deep_sleep.h"
 #include "secrets.h"
+//#include "sec.h"  //alternate file for other github users
 #include <WiFi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>

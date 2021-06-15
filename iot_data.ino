@@ -32,6 +32,7 @@ void sendData(struct sensorData *environment)
     //Blynk.virtualWrite(V8, sensors.getTempCByIndex(0));   //ESP based sensor???
     Blynk.virtualWrite(V9, environment->batteryVoltage);
     Blynk.virtualWrite(V10, environment->lux);
+    Blynk.virtualWrite(V11, bootCount);
     delay(1000);
   }
 
