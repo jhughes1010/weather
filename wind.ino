@@ -65,6 +65,7 @@ void readWindDirection(struct sensorData *environment)
 //  windTick: ISR to capture wind speed relay closure
 //=======================================================
 //ISR
+
 void windTick(void)
 {
   timeSinceLastTick = millis() - lastTick;
