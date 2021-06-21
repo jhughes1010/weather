@@ -8,6 +8,8 @@
 // Includes
 //===========================================
 #include "esp_deep_sleep.h"
+//#include <rom/rtc.h>
+//#include "esp32.h"
 #include "secrets.h"
 //#include "sec.h"  //alternate file for other github users
 #include <WiFi.h>
@@ -21,6 +23,8 @@
 #include "Adafruit_SI1145.h"
 #include <stdarg.h>
 #include <PubSubClient.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 //===========================================
 // Defines
@@ -31,10 +35,7 @@
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
 #define VOLT_PIN     33  //voltage divider for battery monitor
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
-
-#define LED           2  //Diagnostics using built-in LED
-
-#define SerialMonitor
+#define LED_BUILTIN   2  //Diagnostics using built-in LED
 #define SEC 1E6
 //===========================================
 // Externs
@@ -91,9 +92,11 @@ Adafruit_SI1145 uv = Adafruit_SI1145();
 //===========================================
 // setup:
 //===========================================
-void setup() {
+void setup()
+{
 
   int UpdateIntervalModified = 0;
+  DisableBrownOutDetector();
   Serial.begin(115200);
   delay(25);
   MonPrintf("\nWeather station - Deep sleep version.\n");
@@ -105,8 +108,8 @@ void setup() {
 
   pinMode(WIND_SPD_PIN, INPUT);
   pinMode(RAIN_PIN, INPUT);
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, 1);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
 
   wakeup_reason();
 
@@ -146,6 +149,7 @@ void wakeup_reason()
   esp_sleep_wakeup_cause_t wakeup_reason;
 
   wakeup_reason = esp_sleep_get_wakeup_cause();
+  MonPrintf("Wakeup reason: %d\n", wakeup_reason);
   switch (wakeup_reason)
   {
     case ESP_SLEEP_WAKEUP_EXT0 :
@@ -205,6 +209,7 @@ void wakeup_reason()
       delay(5000);
       break;
   }
+  BlinkLED(wakeup_reason);
 }
 
 //===========================================
@@ -219,4 +224,42 @@ void MonPrintf( const char* format, ... ) {
 #ifdef SerialMonitor
   Serial.printf("%s", buffer);
 #endif
+}
+
+//===========================================
+// DisableBrownOutDetector: RESET Brownout detection bit
+//===========================================
+void DisableBrownOutDetector(void)
+{
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+}
+
+//===========================================
+// EnableBrownOutDetector: RESET Brownout detection bit
+//===========================================
+void EnableBrownOutDetector(void)
+{
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 1); //enable brownout detector
+}
+
+//===========================================
+// BlinkLED: Blink BUILTIN x times
+//===========================================
+void BlinkLED(int count)
+{
+  int x;
+  //if reason code =0, then set count =1 (just so I can see something)
+  if(!count)
+  {
+    count=1;
+  }
+  for (x = 0; x < count; x++)
+  {
+    //LED ON
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(250);
+    //LED OFF
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(250);
+  }
 }

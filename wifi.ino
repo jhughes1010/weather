@@ -71,6 +71,7 @@ void wifi_connect()
   }
   else if (App == "Thingspeak")  // for posting datas to Thingspeak website
   {
+    MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
 
     while (WiFi.status() != WL_CONNECTED)
