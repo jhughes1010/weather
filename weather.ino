@@ -96,7 +96,7 @@ void setup()
 {
 
   int UpdateIntervalModified = 0;
-  DisableBrownOutDetector();
+  //DisableBrownOutDetector();
   Serial.begin(115200);
   delay(25);
   MonPrintf("\nWeather station - Deep sleep version.\n");
@@ -110,7 +110,7 @@ void setup()
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-
+  BlinkLED(5);
   wakeup_reason();
 
   // ESP32 Deep Sleep Mode
@@ -200,11 +200,22 @@ void wakeup_reason()
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
+      bootCount++;
       wifi_connect();
+
+      //Next 2 sections are a hack because system always reboots
+      //read sensors
+      readSensors(&environment);
+
+      //send sensor data to IOT destination
+      sendData(&environment);
+      SendDataMQTT(&environment);
+
+      BlinkLED(3);
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printLocalTime();
       updateWake();
-      clearRainfall();
+      //clearRainfall();
       WiFi.disconnect();
       delay(5000);
       break;
@@ -249,17 +260,17 @@ void BlinkLED(int count)
 {
   int x;
   //if reason code =0, then set count =1 (just so I can see something)
-  if(!count)
+  if (!count)
   {
-    count=1;
+    count = 1;
   }
   for (x = 0; x < count; x++)
   {
     //LED ON
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(250);
+    delay(500);
     //LED OFF
     digitalWrite(LED_BUILTIN, LOW);
-    delay(250);
+    delay(500);
   }
 }

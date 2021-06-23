@@ -64,6 +64,8 @@
 //=======================================================================
 void wifi_connect()
 {
+
+  //delay(5000);
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
     MonPrintf("Connecting to %s\n", App);
@@ -73,6 +75,10 @@ void wifi_connect()
   {
     MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
+    WiFi.persistent(false);
+    WiFi.setAutoConnect(false);
+    WiFi.setAutoReconnect(true);
+    WiFi.setTxPower(WIFI_POWER_2dBm);
 
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -82,7 +88,7 @@ void wifi_connect()
   }
   else
   {
-    WiFi.begin(ssid, pass);
+    //WiFi.begin(ssid, pass);
     MonPrintf(" is not a valid application");
   }
 }
