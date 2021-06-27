@@ -63,6 +63,7 @@ struct sensorData
   float UVIndex;
   float lux;
   float batteryVoltage;
+  int batteryADC;
 };
 
 //rainfall is stored here for historical data uses RTC

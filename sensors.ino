@@ -50,6 +50,7 @@ void readBattery (struct sensorData *environment)
   val = analogRead(VOLT_PIN);
   //this value may need tweaking for your voltage divider
   //cabibration = 4.2V/analog value read @ 4.2V
+  environment->batteryADC = val;
   environment->batteryVoltage = val * .001025;
   MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
 }

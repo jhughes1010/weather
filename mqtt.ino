@@ -53,6 +53,7 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishFloat("UVIndex/", environment->UVIndex, true);
   MQTTPublishFloat("relHum/", environment->humidity, true);
   MQTTPublishFloat("pressure/", environment->barometricPressure, true);
+  MQTTPublishInt("batteryADC/", (int)environment->batteryADC, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
