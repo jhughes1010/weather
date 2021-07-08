@@ -105,7 +105,7 @@ void setup()
   Wire.begin();
   bme.begin();
   lightMeter.begin();
-  temperatureSensor.begin();
+  //temperatureSensor.begin();
 
   pinMode(WIND_SPD_PIN, INPUT);
   pinMode(RAIN_PIN, INPUT);
@@ -124,7 +124,7 @@ void setup()
 
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  //jh esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
 }
 
@@ -162,6 +162,7 @@ void wakeup_reason()
     //case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
     case ESP_SLEEP_WAKEUP_TIMER :
       bootCount++;
+      /*
       if (! uv.begin()) {
         Serial.println("Didn't find Si1145");
         while (1);
@@ -169,7 +170,7 @@ void wakeup_reason()
       if (! bme.begin()) {
         Serial.println("Didn't find BME280");
         while (1);
-      }
+      }*/
 
       //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
@@ -195,7 +196,7 @@ void wakeup_reason()
       sendData(&environment);
       SendDataMQTT(&environment);
       WiFi.disconnect();
-      delay(5000);
+      //delay(5000);
       break;
     //case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
@@ -218,7 +219,7 @@ void wakeup_reason()
       updateWake();
       //clearRainfall();
       WiFi.disconnect();
-      delay(5000);
+      //delay(5000);
       break;
   }
   BlinkLED(wakeup_reason);
@@ -269,7 +270,7 @@ void BlinkLED(int count)
   {
     //LED ON
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(500);
+    delay(50);
     //LED OFF
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);

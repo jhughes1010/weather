@@ -9,7 +9,7 @@ void readSensors(struct sensorData *environment)
 {
   readWindSpeed(environment);
   readWindDirection(environment);
-  readTemperature(environment);
+  //readTemperature(environment);
   readLux(environment);
   readBME(environment);
   readUV(environment);
@@ -51,7 +51,7 @@ void readBattery (struct sensorData *environment)
   //this value may need tweaking for your voltage divider
   //cabibration = 4.2V/analog value read @ 4.2V
   environment->batteryADC = val;
-  environment->batteryVoltage = val * .001025;
+  environment->batteryVoltage = val * .00120;
   MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
 }
 

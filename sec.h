@@ -30,6 +30,8 @@ const char* api_key = "Thingspeak_API_key";
 const char* mqttServer = "test.mosquitto.org";
 const int mqttPort = 1883;
 const char mainTopic[20] = "mainTopicName/";
+const char* mqttUser = "username";
+const char* mqttPassword = "password";
 
 
 //===========================================

@@ -24,7 +24,7 @@ void SendDataMQTT (struct sensorData *environment)
   while (!client.connected()) {
     Serial.println("Connecting to MQTT...");
 
-    if (client.connect("ESP32Client"))
+    if (client.connect("ESP32Client", mqttUser, mqttPassword))
     {
       Serial.println("connected");
     }
@@ -32,7 +32,7 @@ void SendDataMQTT (struct sensorData *environment)
     {
       Serial.print("failed with state ");
       Serial.print(client.state());
-      delay(2000);
+      delay(1000);
     }
   }
   MQTTPublishInt("boot/", (int)bootCount, true);
