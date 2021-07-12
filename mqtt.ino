@@ -53,7 +53,9 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishFloat("UVIndex/", environment->UVIndex, true);
   MQTTPublishFloat("relHum/", environment->humidity, true);
   MQTTPublishFloat("pressure/", environment->barometricPressure, true);
+  MQTTPublishFloat("caseTemperature/", environment->BMEtemperature, true);
   MQTTPublishInt("batteryADC/", (int)environment->batteryADC, true);
+  MQTTPublishBool("lowBattery/", lowBattery, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
@@ -109,6 +111,37 @@ void MQTTPublishFloat(const char topic[], float value, bool retain)
   }
 }
 
+//=======================================================================
+//  MQTTPublishBool: routine to publish bool values as strings
+//=======================================================================
+void MQTTPublishBool(const char topic[], bool value, bool retain)
+{
+  char topicBuffer[256];
+  char payload[256];
+  int retryCount = 0;
+  int status = 0;
+
+  strcpy(topicBuffer, mainTopic);
+  strcat(topicBuffer, topic);
+  if (!client.connected()) reconnect();
+  client.loop();
+  if (value)
+  {
+    sprintf(payload, "true");
+  }
+  else
+  {
+    sprintf(payload, "false");
+  }
+  MonPrintf("%s: %s\n", topicBuffer, payload);
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topicBuffer, payload, retain);
+    MonPrintf("MQTT status: %i\n", status);
+    delay(50);
+    retryCount++;
+  }
+}
 //=======================================================================
 //  reconnect: MQTT reconnect
 //=======================================================================

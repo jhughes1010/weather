@@ -9,7 +9,7 @@ void readSensors(struct sensorData *environment)
 {
   readWindSpeed(environment);
   readWindDirection(environment);
-  //readTemperature(environment);
+  readTemperature(environment);
   readLux(environment);
   readBME(environment);
   readUV(environment);
@@ -53,6 +53,15 @@ void readBattery (struct sensorData *environment)
   environment->batteryADC = val;
   environment->batteryVoltage = val * .00120;
   MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
+  //check for low battery situation
+  if (environment->batteryVoltage < 3.78)
+  {
+    lowBattery = true;
+  }
+  else
+  {
+    lowBattery = false;
+  }
 }
 
 //=======================================================

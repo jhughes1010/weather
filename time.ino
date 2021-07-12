@@ -31,6 +31,13 @@ void printTimeNextWake( void)
 //=======================================================================
 void updateWake (void)
 {
+  int muliplierBatterySave = 1;
+  if (lowBattery)
+  {
+    muliplierBatterySave = 4;
+  }
   getLocalTime(&timeinfo);
-  nextUpdate = mktime(&timeinfo) + UpdateIntervalSeconds;
+  nextUpdate = mktime(&timeinfo) + UpdateIntervalSeconds* muliplierBatterySave;
+  //get us to a nice boundary and subtract 60s. This give me a desired offset before e-ink display retrieves data
+  nextUpdate = nextUpdate - nextUpdate%UpdateIntervalSeconds - 60;
 }

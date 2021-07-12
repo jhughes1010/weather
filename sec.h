@@ -52,10 +52,9 @@ const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (900s) for my normal op
 //const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
 
 //===========================================
-//Barometer Calibration
+//Controls supression of the MonPrintf function to serial 
 //===========================================
-#define BAROMETER_CALIBRATION_IN 6.2
-#define BAROMETER_CALIBRATION_Pa 2000 //need sane number
+#define SerialMonitor
 
 //========================= Enable Blynk or Thingspeak ===================================
 

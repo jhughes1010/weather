@@ -45,7 +45,7 @@ extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
 extern struct tm timeinfo;
 extern DallasTemperature temperatureSensor;
-//extern struct sensor;
+
 
 
 //===========================================
@@ -75,7 +75,7 @@ struct historicalData
 
 
 //===========================================
-// RTC Storage
+// RTC Memory storage
 //===========================================
 RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR int lastHour = 0;
@@ -89,6 +89,7 @@ RTC_DATA_ATTR int bootCount = 0;
 BH1750 lightMeter(0x23);
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
+bool lowBattery = false;
 
 //===========================================
 // setup:
@@ -111,7 +112,7 @@ void setup()
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-  BlinkLED(5);
+  BlinkLED(1);
   wakeup_reason();
 
   // ESP32 Deep Sleep Mode
@@ -124,7 +125,7 @@ void setup()
 
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
-  //jh esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
 }
 
@@ -213,16 +214,16 @@ void wakeup_reason()
       sendData(&environment);
       SendDataMQTT(&environment);
 
-      BlinkLED(3);
+      //BlinkLED(3);
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printLocalTime();
       updateWake();
-      //clearRainfall();
+      clearRainfall();
       WiFi.disconnect();
       //delay(5000);
       break;
   }
-  BlinkLED(wakeup_reason);
+  //BlinkLED(wakeup_reason);
 }
 
 //===========================================
