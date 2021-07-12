@@ -14,7 +14,7 @@ void sendData(struct sensorData *environment)
 
 
     Blynk.virtualWrite(V1, environment->humidity );
-    Blynk.virtualWrite(V2, environment->barometricPressure / 100 );
+    Blynk.virtualWrite(V2, environment->barometricPressure );
     Blynk.virtualWrite(V3, environment->UVIndex);
     Blynk.virtualWrite(V4, environment->windSpeed );
     Blynk.virtualWrite(V5, environment->windDirection);
@@ -29,7 +29,6 @@ void sendData(struct sensorData *environment)
 #endif
 
     Blynk.virtualWrite(V8, environment->BMEtemperature);
-    //Blynk.virtualWrite(V8, sensors.getTempCByIndex(0));   //ESP based sensor???
     Blynk.virtualWrite(V9, environment->batteryVoltage);
     Blynk.virtualWrite(V10, environment->lux);
     Blynk.virtualWrite(V11, bootCount);
