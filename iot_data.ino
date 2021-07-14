@@ -54,24 +54,37 @@ void sendData(struct sensorData *environment)
       postStr += "GET /update?api_key=";
       postStr += api_key;
       postStr += "&field1=";
-      postStr += String(rainfall.hourlyRainfall[hourPtr]);
-      /*postStr += "&field2=";
-        postStr += String(humidity);
-        postStr += "&field3=";
-        postStr += String(pressure / 100);
-        postStr += "&field4=";
-        postStr += String(UVindex);
-        postStr += "&field5=";
-        //postStr+=String(windSpeed*1.492); //speed in mph
-        postStr += String(windSpeed * 2.4 * 4.5); //speed in Km/h
-        postStr += "&field6=";
-        postStr += String(windDir);
-        postStr += "&field7=";
-        postStr += String(float(rainTicks) * 0.011, 3);
-        postStr += "&field8=";
-        postStr += String(batteryVolt);
-        postStr += "&field9=";
-        postStr += String(sensors.getTempCByIndex(0));*/
+      postStr += String(bootCount);
+      postStr += "&field2=";
+      postStr += String(environment->humidity);
+      postStr += "&field3=";
+      postStr += String(environment->barometricPressure);
+      postStr += "&field4=";
+      postStr += String(environment->UVIndex);
+      postStr += "&field5=";
+      postStr += String(environment->windSpeed );
+      postStr += "&field6=";
+      postStr += String(environment->windDirection);
+      postStr += "&field7=";
+#ifdef METRIC
+      postStr += String(rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4);
+#else
+      postStr += String(rainfall.hourlyRainfall[hourPtr] * 0.011);
+#endif
+      postStr += "&field8=";
+#ifdef METRIC
+      postStr += String(last24() * 0.011 * 25.4);
+#else
+      postStr += String(last24() *  0.011);
+#endif
+      postStr += "&field9=";
+      postStr += String(environment->batteryVoltage);
+      postStr += "&field10=";
+#ifdef METRIC
+      postStr += String(environment->temperatureC);
+#else
+      postStr += String(environment->temperatureF);
+#endif
       postStr += " HTTP/1.1\r\nHost: a.c.d\r\nConnection: close\r\n\r\n";
       postStr += "";
       client.print(postStr);
