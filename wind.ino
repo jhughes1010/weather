@@ -26,7 +26,14 @@ void readWindSpeed(struct sensorData *environment )
     }
   }
   //Average samples
-  windSpeed = 1.49 * 1000 / (msTotal / samples);
+  if (msTotal || samples)
+  {
+    windSpeed = 1.49 * 1000 / (msTotal / samples);
+  }
+  else
+  {
+    windSpeed = 0;
+  }
   //I see 2 ticks per revolution
   windSpeed = windSpeed / WIND_TICKS_PER_REVOLUTION;
 
@@ -39,8 +46,8 @@ void readWindSpeed(struct sensorData *environment )
   environment->windSpeed = windSpeed;
 }
 /*
-void readWindSpeedOld(struct sensorData *environment )
-{
+  void readWindSpeedOld(struct sensorData *environment )
+  {
   float windSpeed = 0;
   if (validTimeSinceLastTick != 0)
   {
@@ -59,9 +66,9 @@ void readWindSpeedOld(struct sensorData *environment )
   {
     windSpeed = 0;
   }
-#ifdef METRIC
+  #ifdef METRIC
   windSpeed =  windSpeed * 1.60934;
-#endif
+  #endif
   MonPrintf("WindSpeed time period: %i\n", validTimeSinceLastTick);
   MonPrintf("WindSpeed: %f\n", windSpeed);
   windSpeed = int((windSpeed + .5) * 10) / 10;
@@ -71,7 +78,7 @@ void readWindSpeedOld(struct sensorData *environment )
   validTimeSinceLastTick = 0;
   lastTick = 0;
 
-}
+  }
 */
 //=======================================================
 //  readWindDirection: Read ADC to find wind direction
