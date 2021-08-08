@@ -23,7 +23,7 @@ const char* server = "api.blynk.com";
 //===========================================
 //Thinkspeak connection
 //===========================================
-//const char* server = "api.thingspeak.com";
+const char* thingspeak_server = "api.thingspeak.com";
 const char* api_key = "api_key";
 
 //===========================================

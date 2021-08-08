@@ -34,7 +34,7 @@ void readTemperature (struct sensorData *environment)
   }
   else
   {
-    MonPrintf("Error: Could not read temperature data");
+    MonPrintf("Error: Could not read temperature data\n");
     environment->temperatureF = -40;
     environment->temperatureC = -40;
   }

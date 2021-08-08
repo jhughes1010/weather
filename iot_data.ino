@@ -10,8 +10,6 @@ void sendData(struct sensorData *environment)
 
   if (App == "BLYNK") { // choose application
     //Data assigned to Blynk virtual pins
-    //jh choose to send F or C
-
 
     Blynk.virtualWrite(V1, environment->humidity );
     Blynk.virtualWrite(V2, environment->barometricPressure );
@@ -42,7 +40,7 @@ void sendData(struct sensorData *environment)
     Serial.println("Attempting to connect to Thingspeak");
     // Send data to ThingSpeak
     WiFiClient client;
-    if (client.connect(server, 80))
+    if (client.connect(thingspeak_server, 80))
     {
       Serial.println("Connect to ThingSpeak - OK");
       Serial.println("");
@@ -54,13 +52,19 @@ void sendData(struct sensorData *environment)
       postStr += "GET /update?api_key=";
       postStr += api_key;
       postStr += "&field1=";
-      postStr += String(bootCount);
+      postStr += String(environment->batteryVoltage);
       postStr += "&field2=";
       postStr += String(environment->humidity);
       postStr += "&field3=";
       postStr += String(environment->barometricPressure);
+
       postStr += "&field4=";
-      postStr += String(environment->UVIndex);
+#ifdef METRIC
+      postStr += String(environment->temperatureC);
+#else
+      postStr += String(environment->temperatureF);
+#endif
+
       postStr += "&field5=";
       postStr += String(environment->windSpeed );
       postStr += "&field6=";
@@ -75,20 +79,13 @@ void sendData(struct sensorData *environment)
 #ifdef METRIC
       postStr += String(last24() * 0.011 * 25.4);
 #else
-      postStr += String(last24() *  0.011);
+      postStr += String(last24() * 0.011);
 #endif
-      postStr += "&field9=";
-      postStr += String(environment->batteryVoltage);
-      postStr += "&field10=";
-#ifdef METRIC
-      postStr += String(environment->temperatureC);
-#else
-      postStr += String(environment->temperatureF);
-#endif
+
       postStr += " HTTP/1.1\r\nHost: a.c.d\r\nConnection: close\r\n\r\n";
       postStr += "";
       client.print(postStr);
-      Serial.println(postStr);
+      MonPrintf("Thingspeak output: %s\n", postStr);
       delay(5000);
     }
   }
