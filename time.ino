@@ -39,5 +39,5 @@ void updateWake (void)
   getLocalTime(&timeinfo);
   //15s added to wipe out any RTC timing error vs NTP server - causing 2 WAKES back to back
   nextUpdate = mktime(&timeinfo) + UpdateIntervalSeconds * muliplierBatterySave + 15;
-  nextUpdate = nextUpdate - nextUpdate % UpdateIntervalSeconds;
+  nextUpdate = nextUpdate - nextUpdate % (UpdateIntervalSeconds * muliplierBatterySave);
 }

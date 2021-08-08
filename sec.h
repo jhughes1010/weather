@@ -3,41 +3,44 @@
 //Constants for WAKE frequency and UOM for sensors
 //=============================================================
 
-//NOTE: Rename this file to secrets.h or change #include "secrets.h" to "sec.h"
-
+//===========================================
+//Controls supression of the MonPrintf function to serial
+//===========================================
+#define SerialMonitor
 
 //===========================================
 //WiFi connection
 //===========================================
-char ssid[] = "mySSID"; // WiFi Router ssid
-char pass[] = "myPassword"; // WiFi Router password
+char ssid[] = "ssid"; // WiFi Router ssid
+char pass[] = "password"; // WiFi Router password
 
 //===========================================
 //Blynk connection
 //===========================================
-char auth[] = "Blynk_API_key";
-//const char* server = "api.blynk.com";
+char auth[] = "password";
+const char* server = "api.blynk.com";
 
 //===========================================
 //Thinkspeak connection
 //===========================================
-const char* server = "api.thingspeak.com";
-const char* api_key = "Thingspeak_API_key";
+//const char* server = "api.thingspeak.com";
+const char* api_key = "api_key";
 
 //===========================================
 //MQTT broker connection
 //===========================================
-const char* mqttServer = "test.mosquitto.org";
+//const char* mqttServer = "test.mosquitto.org";
+const char* mqttServer = "192.168.5.74";
 const int mqttPort = 1883;
-const char mainTopic[20] = "mainTopicName/";
 const char* mqttUser = "username";
 const char* mqttPassword = "password";
+const char mainTopic[20] = "MainTopic/";
 
 
 //===========================================
 //Metric or Imperial measurements
 //===========================================
-#define METRIC
+//#define METRIC
 
 //===========================================
 //Anemometer Calibration
@@ -48,16 +51,20 @@ const char* mqttPassword = "password";
 //===========================================
 //Set how often to wake and read sensors
 //===========================================
-const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (900s) for my normal operation
-//const int UpdateIntervalSeconds = 1 * 60;  //Sleep timer (60s) testing
+//const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (900s) for my normal operation
+const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (60s) testing
 
 //===========================================
-//Controls supression of the MonPrintf function to serial 
+//Battery calibration
 //===========================================
-#define SerialMonitor
+//measured battery voltage/ADC reading
+#define batteryCalFactor .001167
+
+
 
 //========================= Enable Blynk or Thingspeak ===================================
 
 // configuration control constant for use of either Blynk or Thingspeak
 const String App = "BLYNK";         //  alternative is line below
 //const String App = "Thingspeak"; //  alternative is line above
+#define MQTT

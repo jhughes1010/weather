@@ -3,6 +3,7 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
+//Software version 0.9
 
 //===========================================
 // Includes
@@ -164,16 +165,6 @@ void wakeup_reason()
     //case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
     case ESP_SLEEP_WAKEUP_TIMER :
       bootCount++;
-      /*
-      if (! uv.begin()) {
-        Serial.println("Didn't find Si1145");
-        while (1);
-      }
-      if (! bme.begin()) {
-        Serial.println("Didn't find BME280");
-        while (1);
-      }*/
-
       //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
@@ -196,7 +187,9 @@ void wakeup_reason()
 
       //send sensor data to IOT destination
       sendData(&environment);
+#ifdef MQTT
       SendDataMQTT(&environment);
+#endif
       WiFi.disconnect();
       //delay(5000);
       break;
