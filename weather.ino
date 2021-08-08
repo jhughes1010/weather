@@ -170,7 +170,7 @@ void wakeup_reason()
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
       Serial.println("Wakeup caused by timer");
-      updateWake();
+      
       wifi_connect();
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printTimeNextWake();
@@ -191,10 +191,13 @@ void wakeup_reason()
       SendDataMQTT(&environment);
 #endif
       WiFi.disconnect();
+      updateWake();
       //delay(5000);
       break;
     //case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
+
+    
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
       bootCount++;
