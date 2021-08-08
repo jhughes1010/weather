@@ -3,7 +3,7 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
-//Software version 0.9
+//Software version 1.0
 
 //===========================================
 // Includes
