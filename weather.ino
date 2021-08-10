@@ -91,7 +91,7 @@ BH1750 lightMeter(0x23);
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
-int tickTime[10] = {0};
+long tickTime[10] = {0};
 
 //===========================================
 // setup:
@@ -114,6 +114,10 @@ void setup()
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
+  for(int x=0;x<10;x++)
+  {
+    tickTime[x]=0;
+  }
   BlinkLED(1);
   wakeup_reason();
 

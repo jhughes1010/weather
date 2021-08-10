@@ -12,26 +12,33 @@ void readWindSpeed(struct sensorData *environment )
 {
   float windSpeed = 0;
   int position;
-  int msBetweenSamples = 0;
+  //int msBetweenSamples = 0;
   int msTotal = 0;
   int samples = 0;
 
-  for (position = 0; position < 4; position++)
-  {
-    msBetweenSamples = tickTime[position + 1] - tickTime[position];
-    if (msBetweenSamples > 0)
+  /*
+    for (position = 0; position < 10; position++)
     {
-      msTotal += msBetweenSamples;
+    Serial.println(tickTime[position]);
+    }*/
+  //intentionally ignore the zeroth element
+  for (position = 1; position < 5; position++)
+  {
+    //msBetweenSamples = tickTime[position + 1] - tickTime[position];
+    if (tickTime[position])
+    {
+      msTotal += tickTime[position];
       samples ++;
     }
   }
   //Average samples
-  if (msTotal || samples)
+  if (msTotal && samples)
   {
     windSpeed = 1.49 * 1000 / (msTotal / samples);
   }
   else
   {
+    Serial.println("No Wind data");
     windSpeed = 0;
   }
   //I see 2 ticks per revolution
