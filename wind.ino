@@ -13,16 +13,19 @@ void readWindSpeed(struct sensorData *environment )
   float windSpeed = 0;
   int position;
   //int msBetweenSamples = 0;
-  int msTotal = 0;
+  long msTotal = 0;
   int samples = 0;
 
   /*
     for (position = 0; position < 10; position++)
     {
     Serial.println(tickTime[position]);
-    }*/
+    }
+  */
   //intentionally ignore the zeroth element
-  for (position = 1; position < 5; position++)
+  //look at up to 3 (or 6) revolutions to get wind speed
+  //Again, I see 2 ticks on anemometer
+  for (position = 1; position < 7; position++)
   {
     //msBetweenSamples = tickTime[position + 1] - tickTime[position];
     if (tickTime[position])
@@ -52,41 +55,7 @@ void readWindSpeed(struct sensorData *environment )
   windSpeed = int((windSpeed + .5) * 10) / 10;
   environment->windSpeed = windSpeed;
 }
-/*
-  void readWindSpeedOld(struct sensorData *environment )
-  {
-  float windSpeed = 0;
-  if (validTimeSinceLastTick != 0)
-  {
-    windSpeed = 1.49 * 1000 / validTimeSinceLastTick;
-    //I see 2 ticks per revolution
-    windSpeed = windSpeed / WIND_TICKS_PER_REVOLUTION;
 
-
-    //Starting to get insane values
-    if (windSpeed > 100)
-    {
-      windSpeed = 100;
-    }
-  }
-  else
-  {
-    windSpeed = 0;
-  }
-  #ifdef METRIC
-  windSpeed =  windSpeed * 1.60934;
-  #endif
-  MonPrintf("WindSpeed time period: %i\n", validTimeSinceLastTick);
-  MonPrintf("WindSpeed: %f\n", windSpeed);
-  windSpeed = int((windSpeed + .5) * 10) / 10;
-  environment->windSpeed = windSpeed;
-
-  //reset for next measurement
-  validTimeSinceLastTick = 0;
-  lastTick = 0;
-
-  }
-*/
 //=======================================================
 //  readWindDirection: Read ADC to find wind direction
 //=======================================================

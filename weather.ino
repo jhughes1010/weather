@@ -3,7 +3,7 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
-//Software version 1.0
+#define VERSION 1.1
 
 //===========================================
 // Includes
@@ -104,6 +104,7 @@ void setup()
   Serial.begin(115200);
   delay(25);
   MonPrintf("\nWeather station - Deep sleep version.\n");
+  MonPrintf("Version %f\n\n",VERSION);
   MonPrintf("print control\n");
   Wire.begin();
   bme.begin();
