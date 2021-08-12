@@ -162,7 +162,7 @@ void wakeup_reason()
   switch (wakeup_reason)
   {
     case ESP_SLEEP_WAKEUP_EXT0 :
-      MonPrintf("Wakeup caused by external signal using RTC_IO");
+      MonPrintf("Wakeup caused by external signal using RTC_IO\n");
       rainTicks++;
       printTimeNextWake();
       printLocalTime();
@@ -173,8 +173,8 @@ void wakeup_reason()
       //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
-      attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
-      Serial.println("Wakeup caused by timer");
+      //jh debug attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
+      MonPrintf("Wakeup caused by timer\n");
       
       wifi_connect();
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
