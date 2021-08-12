@@ -26,17 +26,20 @@ void readWindSpeed(struct sensorData *environment )
   //intentionally ignore the zeroth element
   //look at up to 3 (or 6) revolutions to get wind speed
   //Again, I see 2 ticks on anemometer
-  for (position = 1; position < 7; position++)
+  if (count)
   {
-    //msBetweenSamples = tickTime[position + 1] - tickTime[position];
-    if (tickTime[position])
+    for (position = 1; position < 7; position++)
     {
-      msTotal += tickTime[position];
-      samples ++;
+      //msBetweenSamples = tickTime[position + 1] - tickTime[position];
+      if (tickTime[position])
+      {
+        msTotal += tickTime[position];
+        samples ++;
+      }
     }
   }
   //Average samples
-  if (msTotal>0 && samples>0)
+  if (msTotal > 0 && samples > 0)
   {
     windSpeed = 1.49 * 1000 / (msTotal / samples);
   }

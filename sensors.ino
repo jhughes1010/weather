@@ -7,7 +7,7 @@ DallasTemperature temperatureSensor(&oneWire);
 //Entry point for all sensor data reading
 void readSensors(struct sensorData *environment)
 {
-  readWindSpeed(environment);
+  //jh readWindSpeed(environment);
   readWindDirection(environment);
   readTemperature(environment);
   readLux(environment);
