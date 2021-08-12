@@ -14,10 +14,10 @@ void wifi_connect()
   {
     MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
-    WiFi.persistent(false);
-    WiFi.setAutoConnect(false);
-    WiFi.setAutoReconnect(true);
-    WiFi.setTxPower(WIFI_POWER_2dBm);
+    //WiFi.persistent(false);
+    //WiFi.setAutoConnect(false);
+    //WiFi.setAutoReconnect(true);
+    //WiFi.setTxPower(WIFI_POWER_2dBm);
 
     while (WiFi.status() != WL_CONNECTED)
     {

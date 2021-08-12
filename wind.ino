@@ -1,9 +1,10 @@
 //This function is in testing mode now
 
-// Variables used in calculating the windspeed
+// Variables used in calculating the windspeed (from ISR)
 volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long validTimeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
+volatile int count = 0;
 
 //=======================================================
 //  readWindSpeed: Single instantaneous measurement of wind speed
@@ -90,13 +91,11 @@ void readWindDirection(struct sensorData *environment)
 
 void windTick(void)
 {
-  static int count = 0;
-
   timeSinceLastTick = millis() - lastTick;
   //software debounce attempt
+  //record up to 10 ticks from anemometer
   if (timeSinceLastTick > 10 && count < 10)
   {
-    //validTimeSinceLastTick = timeSinceLastTick;
     lastTick = millis();
     tickTime[count] = timeSinceLastTick;
     count++;
