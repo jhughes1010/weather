@@ -173,7 +173,7 @@ void wakeup_reason()
       //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
-      //jh debug attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
+      attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
       MonPrintf("Wakeup caused by timer\n");
       
       wifi_connect();

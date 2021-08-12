@@ -36,7 +36,7 @@ void readWindSpeed(struct sensorData *environment )
     }
   }
   //Average samples
-  if (msTotal && samples)
+  if (msTotal>0 && samples>0)
   {
     windSpeed = 1.49 * 1000 / (msTotal / samples);
   }
