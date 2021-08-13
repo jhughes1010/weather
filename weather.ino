@@ -91,7 +91,12 @@ BH1750 lightMeter(0x23);
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
-long tickTime[10] = {0};
+
+//===========================================
+// ISR Prototypes
+//===========================================
+void IRAM_ATTR rainTick(void);
+void IRAM_ATTR windTick(void);
 
 //===========================================
 // setup:
@@ -115,10 +120,6 @@ void setup()
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-  for(int x=0;x<10;x++)
-  {
-    tickTime[x]=0;
-  }
   BlinkLED(1);
   wakeup_reason();
 
@@ -273,7 +274,7 @@ void BlinkLED(int count)
   {
     //LED ON
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(50);
+    delay(150);
     //LED OFF
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);

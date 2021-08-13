@@ -5,6 +5,7 @@ volatile unsigned long timeSinceLastTick = 0;
 volatile unsigned long validTimeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
 volatile int count = 0;
+volatile unsigned long tickTime[20] = {0};
 
 //=======================================================
 //  readWindSpeed: Single instantaneous measurement of wind speed
@@ -92,7 +93,7 @@ void readWindDirection(struct sensorData *environment)
 //=======================================================
 //ISR
 
-void windTick(void)
+void IRAM_ATTR windTick(void)
 {
   timeSinceLastTick = millis() - lastTick;
   //software debounce attempt
