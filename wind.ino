@@ -1,15 +1,14 @@
-//This function is in testing mode now
-
+//=======================================================
 // Variables used in calculating the windspeed (from ISR)
+//=======================================================
 volatile unsigned long timeSinceLastTick = 0;
-volatile unsigned long validTimeSinceLastTick = 0;
 volatile unsigned long lastTick = 0;
-volatile int count = 0;
 volatile unsigned long tickTime[20] = {0};
+volatile int count = 0;
 
-//=======================================================
-//  readWindSpeed: Single instantaneous measurement of wind speed
-//=======================================================
+//========================================================================
+//  readWindSpeed: Look at ISR data to see if we have wind data to average
+//========================================================================
 void readWindSpeed(struct sensorData *environment )
 {
   float windSpeed = 0;
@@ -18,12 +17,6 @@ void readWindSpeed(struct sensorData *environment )
   long msTotal = 0;
   int samples = 0;
 
-  /*
-    for (position = 0; position < 10; position++)
-    {
-    Serial.println(tickTime[position]);
-    }
-  */
   //intentionally ignore the zeroth element
   //look at up to 3 (or 6) revolutions to get wind speed
   //Again, I see 2 ticks on anemometer
@@ -55,7 +48,6 @@ void readWindSpeed(struct sensorData *environment )
 #ifdef METRIC
   windSpeed =  windSpeed * 1.60934;
 #endif
-  MonPrintf("WindSpeed time period: %i\n", validTimeSinceLastTick);
   MonPrintf("WindSpeed: %f\n", windSpeed);
   windSpeed = int((windSpeed + .5) * 10) / 10;
   environment->windSpeed = windSpeed;
@@ -91,8 +83,6 @@ void readWindDirection(struct sensorData *environment)
 //=======================================================
 //  windTick: ISR to capture wind speed relay closure
 //=======================================================
-//ISR
-
 void IRAM_ATTR windTick(void)
 {
   timeSinceLastTick = millis() - lastTick;

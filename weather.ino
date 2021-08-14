@@ -26,6 +26,7 @@
 #include <PubSubClient.h>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
+#include <esp_task_wdt.h>
 
 //===========================================
 // Defines
@@ -38,6 +39,7 @@
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
 #define LED_BUILTIN   2  //Diagnostics using built-in LED
 #define SEC 1E6          //Multiplier for uS based math
+#define WDT_TIMEOUT 60
 //===========================================
 // Externs
 //===========================================
@@ -103,18 +105,19 @@ void IRAM_ATTR windTick(void);
 //===========================================
 void setup()
 {
-
+  esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL); //add current thread to WDT watch
   int UpdateIntervalModified = 0;
   //DisableBrownOutDetector();
   Serial.begin(115200);
   delay(25);
   MonPrintf("\nWeather station - Deep sleep version.\n");
-  MonPrintf("Version %f\n\n",VERSION);
+  MonPrintf("Version %f\n\n", VERSION);
   MonPrintf("print control\n");
   Wire.begin();
   bme.begin();
   lightMeter.begin();
-  //temperatureSensor.begin();
+  temperatureSensor.begin();
 
   pinMode(WIND_SPD_PIN, INPUT);
   pinMode(RAIN_PIN, INPUT);
@@ -130,7 +133,7 @@ void setup()
   {
     UpdateIntervalModified = 3;
   }
-
+  esp_task_wdt_reset();
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
@@ -176,7 +179,7 @@ void wakeup_reason()
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
       MonPrintf("Wakeup caused by timer\n");
-      
+
       wifi_connect();
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printTimeNextWake();
@@ -203,7 +206,7 @@ void wakeup_reason()
     //case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
     //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
 
-    
+
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
       bootCount++;
