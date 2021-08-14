@@ -59,7 +59,7 @@ int last24(void)
 //  rainTick: ISR for rain tip gauge count
 //=======================================================================
 //ISR
-void rainTick(void)
+void IRAM_ATTR rainTick(void)
 {
   timeSinceLastTip = millis() - lastTip;
   //software debounce attempt
