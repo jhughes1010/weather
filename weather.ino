@@ -9,8 +9,6 @@
 // Includes
 //===========================================
 #include "esp_deep_sleep.h"
-//#include <rom/rtc.h>
-//#include "esp32.h"
 #include "secrets.h"
 //#include "sec.h"  //alternate file for other github users
 #include <WiFi.h>
@@ -31,7 +29,6 @@
 //===========================================
 // Defines
 //===========================================
-
 #define WIND_SPD_PIN 14  //reed switch based anemometer count
 #define RAIN_PIN     25  //reed switch based tick counter on tip bucket
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
@@ -40,6 +37,7 @@
 #define LED_BUILTIN   2  //Diagnostics using built-in LED
 #define SEC 1E6          //Multiplier for uS based math
 #define WDT_TIMEOUT 60
+
 //===========================================
 // Externs
 //===========================================
@@ -48,8 +46,6 @@ extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
 extern struct tm timeinfo;
 extern DallasTemperature temperatureSensor;
-
-
 
 //===========================================
 // Custom structures
@@ -106,9 +102,10 @@ void IRAM_ATTR windTick(void);
 //===========================================
 void setup()
 {
+  int UpdateIntervalModified = 0;
+
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
-  int UpdateIntervalModified = 0;
 
   //set hardware pins
   pinMode(WIND_SPD_PIN, INPUT);
@@ -124,6 +121,7 @@ void setup()
   MonPrintf("Version %f\n\n", VERSION);
   MonPrintf("print control\n");
   BlinkLED(1);
+  bootCount++;
 
   //Initialize i2c and 1w sensors
   Wire.begin();
@@ -135,35 +133,7 @@ void setup()
 
   if (WiFiEnable)
   {
-    wifi_connect();
-    //Calibrate Clock - My ESP RTC is noticibly fast
-
-    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    printLocalTime();
-    printTimeNextWake();
-
-    //Get Sensor data
-    readSensors(&environment);
-
-    //move rainTicks into hourly containers
-    MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
-    addTipsToHour(rainTicks);
-    clearRainfallHour(timeinfo.tm_hour + 1);
-    rainTicks = 0;
-
-    //Start sensor housekeeping
-    addTipsToHour(rainTicks);
-    clearRainfallHour(timeinfo.tm_hour + 1);
-    rainTicks = 0;
-    //send sensor data to IOT destination
-    sendData(&environment);
-
-    //send sensor data to MQTT
-#ifdef MQTT
-    SendDataMQTT(&environment);
-#endif
-
-    WiFi.disconnect();
+    processSensorUpdates();
   }
 
 
@@ -192,6 +162,43 @@ void loop()
   //no loop code
 }
 
+//====================================================
+// processSensorUpdates: Connect to WiFi, read sensors
+// and record sensors at IOT destination and MQTT
+//====================================================
+void processSensorUpdates(void)
+{
+  struct sensorData environment;
+
+  wifi_connect();
+  //Calibrate Clock - My ESP RTC is noticibly fast
+
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
+  printTimeNextWake();
+
+  //Get Sensor data
+  readSensors(&environment);
+
+  //move rainTicks into hourly containers
+  MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
+  addTipsToHour(rainTicks);
+  clearRainfallHour(timeinfo.tm_hour + 1);
+  rainTicks = 0;
+
+  //Start sensor housekeeping
+  addTipsToHour(rainTicks);
+  clearRainfallHour(timeinfo.tm_hour + 1);
+  rainTicks = 0;
+  //send sensor data to IOT destination
+  sendData(&environment);
+
+  //send sensor data to MQTT
+#ifdef MQTT
+  SendDataMQTT(&environment);
+#endif
+  WiFi.disconnect();
+}
 
 //===========================================================
 // wakeup_reason: action based on WAKE reason
@@ -202,50 +209,33 @@ void loop()
 //check for WAKE reason and respond accordingly
 void wakeup_reason()
 {
-  struct sensorData environment;
   esp_sleep_wakeup_cause_t wakeup_reason;
 
   wakeup_reason = esp_sleep_get_wakeup_cause();
   MonPrintf("Wakeup reason: %d\n", wakeup_reason);
   switch (wakeup_reason)
   {
+    //Rain Tip Gauge
     case ESP_SLEEP_WAKEUP_EXT0 :
       MonPrintf("Wakeup caused by external signal using RTC_IO\n");
       WiFiEnable = false;
       rainTicks++;
       break;
 
+    //Timer
     case ESP_SLEEP_WAKEUP_TIMER :
       MonPrintf("Wakeup caused by timer\n");
-      bootCount++;
       WiFiEnable = true;
       //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
-      MonPrintf("Wakeup caused by timer\n");
       break;
 
+    //Initial boot or other default reason
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-      bootCount++;
-      wifi_connect();
-
-      //Next 2 sections are a hack because system always reboots
-      //read sensors
-      readSensors(&environment);
-
-      //send sensor data to IOT destination
-      sendData(&environment);
-#ifdef MQTT
-      SendDataMQTT(&environment);
-#endif
-
-      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-      printLocalTime();
-      updateWake();
-      clearRainfall();
-      WiFi.disconnect();
+      WiFiEnable = true;
       break;
   }
 }
