@@ -10,7 +10,6 @@
 //===========================================
 #include "esp_deep_sleep.h"
 #include "secrets.h"
-//#include "sec.h"  //alternate file for other github users
 #include <WiFi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>
@@ -102,7 +101,7 @@ void IRAM_ATTR windTick(void);
 //===========================================
 void setup()
 {
-  int UpdateIntervalModified = 0;
+  long UpdateIntervalModified = 0;
 
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -146,12 +145,7 @@ void setup()
   //pet the dog!
   esp_task_wdt_reset();
 
-  //Set deep sleep - both timer and EXT0 WAKE events are accepted
-  MonPrintf("\n\n\n\n\nGoing to sleep now...\n");
-  MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
-  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
-  esp_deep_sleep_start();
+  sleepyTime(UpdateIntervalModified);
 }
 
 //===================================================
@@ -238,6 +232,19 @@ void wakeup_reason()
       WiFiEnable = true;
       break;
   }
+}
+
+//===========================================
+// sleepyTime: prepare for sleep and set
+//timer and EXT0 WAKE events
+//===========================================
+void sleepyTime(long UpdateIntervalModified)
+{
+  MonPrintf("\n\n\n\n\nGoing to sleep now...\n");
+  MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
+  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  esp_deep_sleep_start();
 }
 
 //===========================================
