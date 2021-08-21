@@ -43,6 +43,11 @@ const char mainTopic[20] = "MainTopic/";
 //#define METRIC
 
 //===========================================
+//Use optional NVM for backup
+//===========================================
+#define USE_EEPROM
+
+//===========================================
 //Anemometer Calibration
 //===========================================
 //I see 2 switch pulls to GND per revolation. Not sure what others see

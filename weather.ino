@@ -218,7 +218,9 @@ void wakeup_reason()
 
       //send sensor data to IOT destination
       sendData(&environment);
+#ifdef MQTT
       SendDataMQTT(&environment);
+#endif
 
       //BlinkLED(3);
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
