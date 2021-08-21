@@ -9,7 +9,6 @@ struct tm timeinfo;
 //=======================================================================
 void printLocalTime()
 {
-  struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
     MonPrintf("Failed to obtain time");
     return;
@@ -23,7 +22,7 @@ void printLocalTime()
 void printTimeNextWake( void)
 {
   getLocalTime(&timeinfo);
-  MonPrintf("Time to next wake: %i seconds\n", nextUpdate);
+  MonPrintf("Time to next wake: %i seconds\n", nextUpdate - mktime(&timeinfo) );
 }
 
 //=======================================================================
@@ -37,7 +36,7 @@ void updateWake (void)
     muliplierBatterySave = 4;
   }
   getLocalTime(&timeinfo);
-  //15s added to wipe out any RTC timing error vs NTP server - causing 2 WAKES back to back
-  nextUpdate = mktime(&timeinfo) + UpdateIntervalSeconds * muliplierBatterySave + 15;
+  //45s added to wipe out any RTC timing error vs NTP server - causing 2 WAKES back to back
+  nextUpdate = mktime(&timeinfo) + UpdateIntervalSeconds * muliplierBatterySave + 45;
   nextUpdate = nextUpdate - nextUpdate % (UpdateIntervalSeconds * muliplierBatterySave);
 }

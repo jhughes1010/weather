@@ -117,8 +117,7 @@ void setup()
 
   //Title message
   MonPrintf("\nWeather station - Deep sleep version.\n");
-  MonPrintf("Version %f\n\n", VERSION);
-  MonPrintf("print control\n");
+  MonPrintf("Version %5.2f\n\n", VERSION);
   BlinkLED(1);
   bootCount++;
 
@@ -129,22 +128,19 @@ void setup()
   temperatureSensor.begin();
 
   wakeup_reason();
-
   if (WiFiEnable)
   {
+    MonPrintf("Connecting to WiFi\n");
     processSensorUpdates();
   }
-
 
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
   if (UpdateIntervalModified <= 0)
   {
     UpdateIntervalModified = 3;
   }
-
   //pet the dog!
   esp_task_wdt_reset();
-
   sleepyTime(UpdateIntervalModified);
 }
 
@@ -166,7 +162,7 @@ void processSensorUpdates(void)
 
   wifi_connect();
   //Calibrate Clock - My ESP RTC is noticibly fast
-
+  updateWake();
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   printLocalTime();
   printTimeNextWake();
@@ -240,8 +236,9 @@ void wakeup_reason()
 //===========================================
 void sleepyTime(long UpdateIntervalModified)
 {
-  MonPrintf("\n\n\n\n\nGoing to sleep now...\n");
-  MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
+  MonPrintf("\n\n\nGoing to sleep now...\n");
+  MonPrintf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
+  //updateWake();
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
