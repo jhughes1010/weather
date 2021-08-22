@@ -159,7 +159,9 @@ void loop()
 void processSensorUpdates(void)
 {
   struct sensorData environment;
-
+#ifdef USE_EEPROM
+  readEEPROM(&rainfall);
+#endif
   wifi_connect();
   //Calibrate Clock - My ESP RTC is noticibly fast
   updateWake();
@@ -180,6 +182,10 @@ void processSensorUpdates(void)
   addTipsToHour(rainTicks);
   clearRainfallHour(timeinfo.tm_hour + 1);
   rainTicks = 0;
+  //Conditional write of rainfall data to EEPROM
+#ifdef USE_EEPROM
+  conditionalWriteEEPROM(&rainfall);
+#endif
   //send sensor data to IOT destination
   sendData(&environment);
 
@@ -187,6 +193,7 @@ void processSensorUpdates(void)
 #ifdef MQTT
   SendDataMQTT(&environment);
 #endif
+
   WiFi.disconnect();
 }
 
