@@ -14,7 +14,6 @@ void readEEPROM(struct historicalData *rainfall)
 
   structSize = sizeof(historicalData);
   memset(buffer, 0, sizeof(structSize));
-  //Serial.printf("EEPROM read: %i bytes\n", struct_size);
 
   //Send dummy write to set addpress register of NVM
   Wire.beginTransmission(EEPROM_I2C_ADDRESS);
@@ -43,7 +42,7 @@ void readEEPROM(struct historicalData *rainfall)
   if (nonZero)
   {
     MonPrintf("\nRestoring rainfall structure from EEPROM\n");
-    memcpy(buffer, rainfall, structSize);
+    memcpy(rainfall, buffer, structSize);
   }
 }
 
@@ -65,26 +64,25 @@ void writeEEPROM(struct historicalData *rainfall)
 
 
   structSize = sizeof(historicalData);
-  memcpy(rainfall, buffer, structSize);
-  if (bootCount > 1)
+  memcpy(buffer, rainfall, structSize);
+  for (page = 0; (page * pageSize) < structSize; page++)
   {
-    for (page = 0; (page * pageSize) < structSize; page++)
+    pageAddr = page * pageSize;
+    Wire.beginTransmission(EEPROM_I2C_ADDRESS);
+    Wire.write((int)(pageAddr >> 8));
+    Wire.write((int)(pageAddr & 0xFF));
+    MonPrintf("\npageAddr: %04x\n", pageAddr);
+    for (writePosition = pageAddr; writePosition < (pageAddr + pageSize); writePosition++)
     {
-      pageAddr = page * pageSize;
-      Wire.beginTransmission(EEPROM_I2C_ADDRESS);
-      Wire.write((int)(pageAddr >> 8));
-      Wire.write((int)(pageAddr & 0xFF));
-      for (writePosition = pageAddr; writePosition < (pageAddr + pageSize); writePosition++)
+      if (writePosition < structSize)
       {
-        if (writePosition < structSize)
-        {
-          Wire.write(buffer[writePosition]);
-        }
+        MonPrintf("position: % 02x: % 02x\n", writePosition, buffer[writePosition]);
+        Wire.write(buffer[writePosition]);
       }
-      Wire.endTransmission();
-      delay(10);
     }
-
+    Wire.endTransmission();
+    delay(10);
+    MonPrintf("page write\n");
   }
 }
 
@@ -96,7 +94,7 @@ void initEEPROM(void)
   int structSize;
   int x;
   structSize = sizeof(historicalData);
-
+  MonPrintf("sizeof int: %i\n", sizeof(int));
   for (x = 0; x < structSize; x++)
   {
     Wire.beginTransmission(EEPROM_I2C_ADDRESS);
@@ -106,9 +104,7 @@ void initEEPROM(void)
     Wire.endTransmission();
     delay(10);
   }
-
 }
-
 
 //========================================================================
 //  conditionalWriteEEPROM: Only write EEPROM if something has changed
@@ -130,6 +126,7 @@ void conditionalWriteEEPROM(struct historicalData *rainfall)
   {
     if (historyBuffer.hourlyRainfall[hour] != rainfall->hourlyRainfall[hour])
     {
+      MonPrintf("Hourly rainfall: %i\n", rainfall->hourlyRainfall[hour]);
       match = false;
     }
   }
@@ -139,6 +136,7 @@ void conditionalWriteEEPROM(struct historicalData *rainfall)
   {
     if (historyBuffer.current60MinRainfall[hour] != rainfall->current60MinRainfall[hour])
     {
+      MonPrintf("This hour rainfall: %i\n", rainfall->current60MinRainfall[hour]);
       match = false;
     }
   }

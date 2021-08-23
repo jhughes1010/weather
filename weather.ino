@@ -127,6 +127,7 @@ void setup()
   lightMeter.begin();
   temperatureSensor.begin();
 
+  updateWake();
   wakeup_reason();
   if (WiFiEnable)
   {
@@ -164,7 +165,6 @@ void processSensorUpdates(void)
 #endif
   wifi_connect();
   //Calibrate Clock - My ESP RTC is noticibly fast
-  updateWake();
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   printLocalTime();
   printTimeNextWake();
@@ -233,13 +233,14 @@ void wakeup_reason()
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
       WiFiEnable = true;
+      //jh initEEPROM(); //my debug only
       break;
   }
 }
 
 //===========================================
 // sleepyTime: prepare for sleep and set
-//timer and EXT0 WAKE events
+// timer and EXT0 WAKE events
 //===========================================
 void sleepyTime(long UpdateIntervalModified)
 {
