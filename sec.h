@@ -44,8 +44,15 @@ const char mainTopic[20] = "MainTopic/";
 
 //===========================================
 //Use optional NVM for backup
+//This is a failsafe for RESET events out of
+//system control
 //===========================================
-#define USE_EEPROM
+//#define USE_EEPROM
+
+//===========================================
+//BH1750 Enable
+//===========================================
+#define BH1750Enable
 
 //===========================================
 //Anemometer Calibration

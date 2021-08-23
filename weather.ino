@@ -3,6 +3,7 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
+//version 1.2 RC1
 #define VERSION 1.2
 
 //===========================================
@@ -16,7 +17,9 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
 #include "Wire.h"
+#ifdef BH1750Enable
 #include <BH1750.h>
+#endif
 #include <BME280I2C.h>
 #include "Adafruit_SI1145.h"
 #include <stdarg.h>
@@ -31,9 +34,10 @@
 #define WIND_SPD_PIN 14  //reed switch based anemometer count
 #define RAIN_PIN     25  //reed switch based tick counter on tip bucket
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
+#define PR_PIN       15  //photoresistor pin 
 #define VOLT_PIN     33  //voltage divider for battery monitor
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
-#define LED_BUILTIN   2  //Diagnostics using built-in LED
+#define LED_BUILTIN   2  //Diagnostics using built-in LED, may be set to 12 for newer boards that do not use devkit sockets
 #define SEC 1E6          //Multiplier for uS based math
 #define WDT_TIMEOUT 60
 
@@ -60,6 +64,7 @@ struct sensorData
   float humidity;
   float UVIndex;
   float lux;
+  int photoresistor;
   float batteryVoltage;
   int batteryADC;
 };
@@ -84,7 +89,9 @@ RTC_DATA_ATTR int bootCount = 0;
 //===========================================
 // Global instantiation
 //===========================================
+#ifdef BH1750Enable
 BH1750 lightMeter(0x23);
+#endif
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
@@ -124,8 +131,11 @@ void setup()
   //Initialize i2c and 1w sensors
   Wire.begin();
   bme.begin();
+#ifdef BH1750Enable
   lightMeter.begin();
+#endif
   temperatureSensor.begin();
+
 
   updateWake();
   wakeup_reason();
