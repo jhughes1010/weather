@@ -59,6 +59,7 @@ struct sensorData
   float temperatureF;
   float windSpeed;
   float windDirection;
+  char windCardinalDirection[5];
   float barometricPressure;
   float BMEtemperature;
   float humidity;
