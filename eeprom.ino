@@ -28,9 +28,7 @@ void readEEPROM(struct historicalData *rainfall)
     delay(1);
     while (Wire.available())
     {
-      Serial.print(".");
       c = Wire.read();
-      Serial.print(c, HEX);
     }
     if (c)
     {
@@ -76,7 +74,7 @@ void writeEEPROM(struct historicalData *rainfall)
     {
       if (writePosition < structSize)
       {
-        MonPrintf("position: % 02x: % 02x\n", writePosition, buffer[writePosition]);
+        //MonPrintf("position: % 02x: % 02x\n", writePosition, buffer[writePosition]);
         Wire.write(buffer[writePosition]);
       }
     }
@@ -126,7 +124,7 @@ void conditionalWriteEEPROM(struct historicalData *rainfall)
   {
     if (historyBuffer.hourlyRainfall[hour] != rainfall->hourlyRainfall[hour])
     {
-      MonPrintf("Hourly rainfall: %i\n", rainfall->hourlyRainfall[hour]);
+      //MonPrintf("Hourly rainfall: %i\n", rainfall->hourlyRainfall[hour]);
       match = false;
     }
   }
@@ -136,7 +134,7 @@ void conditionalWriteEEPROM(struct historicalData *rainfall)
   {
     if (historyBuffer.current60MinRainfall[hour] != rainfall->current60MinRainfall[hour])
     {
-      MonPrintf("This hour rainfall: %i\n", rainfall->current60MinRainfall[hour]);
+      //MonPrintf("This hour rainfall: %i\n", rainfall->current60MinRainfall[hour]);
       match = false;
     }
   }

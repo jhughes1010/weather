@@ -22,7 +22,7 @@ void SendDataMQTT (struct sensorData *environment)
   //client.setCallback(callback);
 
   while (!client.connected()) {
-    Serial.println("Connecting to MQTT...");
+    MonPrintf("Connecting to MQTT...");
 
     if (client.connect("ESP32Client", mqttUser, mqttPassword))
     {

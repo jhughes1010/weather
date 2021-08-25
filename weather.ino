@@ -255,8 +255,8 @@ void wakeup_reason()
 //===========================================
 void sleepyTime(long UpdateIntervalModified)
 {
-  MonPrintf("\n\n\nGoing to sleep now...\n");
-  MonPrintf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
+  Serial.println("\n\n\nGoing to sleep now...");
+  Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
   //updateWake();
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
