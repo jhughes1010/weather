@@ -3,6 +3,9 @@ weather station scratch code
 This is a dev area for working the deep sleep integration on the opengreenenergy weatherstation on instructables.com
 https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
+My build notes and ramblings can be found at https://jameshughes.atlassian.net/wiki/spaces/WSV/overview
+
+
 ## MCU will wake for 3 reasons:
 
 1. [![Generic badge](https://img.shields.io/badge/BOOT-OK-blue.svg)](https://shields.io/)Initial power on - When device powers on, MCU will briefly connect to the WiFi to get current time.

@@ -11,6 +11,7 @@ void readSensors(struct sensorData *environment)
   readWindDirection(environment);
   readTemperature(environment);
   readLux(environment);
+  readPR(environment);
   readBME(environment);
   readUV(environment);
   readBattery(environment);
@@ -69,10 +70,26 @@ void readBattery (struct sensorData *environment)
 //=======================================================
 void readLux(struct sensorData *environment)
 {
+#ifdef BH1750Enable
   environment->lux = lightMeter.readLightLevel();
+#else
+  environment->lux = -3;
+#endif
   MonPrintf("LUX value: %6.2f\n", environment->lux);
 }
 
+//=======================================================
+//  readPR: LUX sensor read
+//=======================================================
+void readPR(struct sensorData *environment)
+{
+  int vin;
+
+  vin = analogRead(PR_PIN);
+
+  MonPrintf("photoresistor value: %i photoresistor\n", vin);
+  environment->photoresistor = vin;
+}
 //=======================================================
 //  readBME: BME sensor read
 //=======================================================

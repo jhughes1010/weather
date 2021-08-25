@@ -3,23 +3,23 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
-#define VERSION 1.1
+//version 1.2 RC1
+#define VERSION 1.2
 
 //===========================================
 // Includes
 //===========================================
 #include "esp_deep_sleep.h"
-//#include <rom/rtc.h>
-//#include "esp32.h"
 #include "secrets.h"
-//#include "sec.h"  //alternate file for other github users
 #include <WiFi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
 #include "Wire.h"
+#ifdef BH1750Enable
 #include <BH1750.h>
+#endif
 #include <BME280I2C.h>
 #include "Adafruit_SI1145.h"
 #include <stdarg.h>
@@ -31,15 +31,16 @@
 //===========================================
 // Defines
 //===========================================
-
 #define WIND_SPD_PIN 14  //reed switch based anemometer count
 #define RAIN_PIN     25  //reed switch based tick counter on tip bucket
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
+#define PR_PIN       15  //photoresistor pin 
 #define VOLT_PIN     33  //voltage divider for battery monitor
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
-#define LED_BUILTIN   2  //Diagnostics using built-in LED
+#define LED_BUILTIN   2  //Diagnostics using built-in LED, may be set to 12 for newer boards that do not use devkit sockets
 #define SEC 1E6          //Multiplier for uS based math
 #define WDT_TIMEOUT 60
+
 //===========================================
 // Externs
 //===========================================
@@ -48,8 +49,6 @@ extern const long  gmtOffset_sec;
 extern const int   daylightOffset_sec;
 extern struct tm timeinfo;
 extern DallasTemperature temperatureSensor;
-
-
 
 //===========================================
 // Custom structures
@@ -60,11 +59,13 @@ struct sensorData
   float temperatureF;
   float windSpeed;
   float windDirection;
+  char windCardinalDirection[5];
   float barometricPressure;
   float BMEtemperature;
   float humidity;
   float UVIndex;
   float lux;
+  int photoresistor;
   float batteryVoltage;
   int batteryADC;
 };
@@ -89,10 +90,13 @@ RTC_DATA_ATTR int bootCount = 0;
 //===========================================
 // Global instantiation
 //===========================================
+#ifdef BH1750Enable
 BH1750 lightMeter(0x23);
+#endif
 BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
+bool WiFiEnable = false;
 
 //===========================================
 // ISR Prototypes
@@ -105,39 +109,51 @@ void IRAM_ATTR windTick(void);
 //===========================================
 void setup()
 {
+  long UpdateIntervalModified = 0;
+
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
-  int UpdateIntervalModified = 0;
-  //DisableBrownOutDetector();
-  Serial.begin(115200);
-  delay(25);
-  MonPrintf("\nWeather station - Deep sleep version.\n");
-  MonPrintf("Version %f\n\n", VERSION);
-  MonPrintf("print control\n");
-  Wire.begin();
-  bme.begin();
-  lightMeter.begin();
-  temperatureSensor.begin();
 
+  //set hardware pins
   pinMode(WIND_SPD_PIN, INPUT);
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-  BlinkLED(1);
-  wakeup_reason();
 
-  // ESP32 Deep Sleep Mode
-  MonPrintf("Going to sleep now...\n\n\n\n\n");
+  Serial.begin(115200);
+  delay(25);
+
+  //Title message
+  MonPrintf("\nWeather station - Deep sleep version.\n");
+  MonPrintf("Version %5.2f\n\n", VERSION);
+  BlinkLED(1);
+  bootCount++;
+
+  //Initialize i2c and 1w sensors
+  Wire.begin();
+  bme.begin();
+#ifdef BH1750Enable
+  lightMeter.begin();
+#endif
+  temperatureSensor.begin();
+
+
+  updateWake();
+  wakeup_reason();
+  if (WiFiEnable)
+  {
+    MonPrintf("Connecting to WiFi\n");
+    processSensorUpdates();
+  }
+
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
   if (UpdateIntervalModified <= 0)
   {
     UpdateIntervalModified = 3;
   }
+  //pet the dog!
   esp_task_wdt_reset();
-  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
-  MonPrintf("Waking in %i seconds\n", UpdateIntervalModified);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
-  esp_deep_sleep_start();
+  sleepyTime(UpdateIntervalModified);
 }
 
 //===================================================
@@ -148,6 +164,49 @@ void loop()
   //no loop code
 }
 
+//====================================================
+// processSensorUpdates: Connect to WiFi, read sensors
+// and record sensors at IOT destination and MQTT
+//====================================================
+void processSensorUpdates(void)
+{
+  struct sensorData environment;
+#ifdef USE_EEPROM
+  readEEPROM(&rainfall);
+#endif
+  wifi_connect();
+  //Calibrate Clock - My ESP RTC is noticibly fast
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
+  printTimeNextWake();
+
+  //Get Sensor data
+  readSensors(&environment);
+
+  //move rainTicks into hourly containers
+  MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
+  addTipsToHour(rainTicks);
+  clearRainfallHour(timeinfo.tm_hour + 1);
+  rainTicks = 0;
+
+  //Start sensor housekeeping
+  addTipsToHour(rainTicks);
+  clearRainfallHour(timeinfo.tm_hour + 1);
+  rainTicks = 0;
+  //Conditional write of rainfall data to EEPROM
+#ifdef USE_EEPROM
+  conditionalWriteEEPROM(&rainfall);
+#endif
+  //send sensor data to IOT destination
+  sendData(&environment);
+
+  //send sensor data to MQTT
+#ifdef MQTT
+  SendDataMQTT(&environment);
+#endif
+
+  WiFi.disconnect();
+}
 
 //===========================================================
 // wakeup_reason: action based on WAKE reason
@@ -158,78 +217,50 @@ void loop()
 //check for WAKE reason and respond accordingly
 void wakeup_reason()
 {
-  struct sensorData environment;
   esp_sleep_wakeup_cause_t wakeup_reason;
 
   wakeup_reason = esp_sleep_get_wakeup_cause();
   MonPrintf("Wakeup reason: %d\n", wakeup_reason);
   switch (wakeup_reason)
   {
+    //Rain Tip Gauge
     case ESP_SLEEP_WAKEUP_EXT0 :
       MonPrintf("Wakeup caused by external signal using RTC_IO\n");
+      WiFiEnable = false;
       rainTicks++;
-      printTimeNextWake();
-      printLocalTime();
       break;
-    //case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;
+
+    //Timer
     case ESP_SLEEP_WAKEUP_TIMER :
-      bootCount++;
+      MonPrintf("Wakeup caused by timer\n");
+      WiFiEnable = true;
       //Rainfall interrupt pin set up
       delay(100); //possible settling time on pin to charge
       attachInterrupt(digitalPinToInterrupt(RAIN_PIN), rainTick, FALLING);
       attachInterrupt(digitalPinToInterrupt(WIND_SPD_PIN), windTick, RISING);
-      MonPrintf("Wakeup caused by timer\n");
-
-      wifi_connect();
-      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-      printTimeNextWake();
-      printLocalTime();
-
-      //read sensors
-      readSensors(&environment);
-
-      //move rainTicks into hourly containers
-      MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
-      addTipsToHour(rainTicks);
-      clearRainfallHour(timeinfo.tm_hour + 1);
-      rainTicks = 0;
-
-      //send sensor data to IOT destination
-      sendData(&environment);
-#ifdef MQTT
-      SendDataMQTT(&environment);
-#endif
-      WiFi.disconnect();
-      updateWake();
-      //delay(5000);
       break;
-    //case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;
-    //case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;
 
-
+    //Initial boot or other default reason
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
-      bootCount++;
-      wifi_connect();
-
-      //Next 2 sections are a hack because system always reboots
-      //read sensors
-      readSensors(&environment);
-
-      //send sensor data to IOT destination
-      sendData(&environment);
-      SendDataMQTT(&environment);
-
-      //BlinkLED(3);
-      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-      printLocalTime();
-      updateWake();
-      clearRainfall();
-      WiFi.disconnect();
-      //delay(5000);
+      WiFiEnable = true;
+      //jh initEEPROM(); //my debug only
       break;
   }
-  //BlinkLED(wakeup_reason);
+}
+
+//===========================================
+// sleepyTime: prepare for sleep and set
+// timer and EXT0 WAKE events
+//===========================================
+void sleepyTime(long UpdateIntervalModified)
+{
+  Serial.println("\n\n\nGoing to sleep now...");
+  Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
+  //updateWake();
+  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  esp_deep_sleep_start();
 }
 
 //===========================================
@@ -244,22 +275,6 @@ void MonPrintf( const char* format, ... ) {
 #ifdef SerialMonitor
   Serial.printf("%s", buffer);
 #endif
-}
-
-//===========================================
-// DisableBrownOutDetector: RESET Brownout detection bit
-//===========================================
-void DisableBrownOutDetector(void)
-{
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
-}
-
-//===========================================
-// EnableBrownOutDetector: RESET Brownout detection bit
-//===========================================
-void EnableBrownOutDetector(void)
-{
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 1); //enable brownout detector
 }
 
 //===========================================

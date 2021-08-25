@@ -39,7 +39,7 @@ void readWindSpeed(struct sensorData *environment )
   }
   else
   {
-    Serial.println("No Wind data");
+    MonPrintf("No Wind data");
     windSpeed = 0;
   }
   //I see 2 ticks per revolution
@@ -49,7 +49,7 @@ void readWindSpeed(struct sensorData *environment )
   windSpeed =  windSpeed * 1.60934;
 #endif
   MonPrintf("WindSpeed: %f\n", windSpeed);
-  windSpeed = int((windSpeed + .5) * 10) / 10;
+  windSpeed = int((windSpeed + .05) * 10) / 10;
   environment->windSpeed = windSpeed;
 }
 
@@ -60,10 +60,13 @@ void readWindSpeed(struct sensorData *environment )
 void readWindDirection(struct sensorData *environment)
 {
   int windPosition;
+  //Initial direction
+  //Prove it is not this direction
   String windDirection = "0";
+  String windCardinalDirection = "N";
   int analogCompare[15] = {150, 300, 450, 600, 830, 1100, 1500, 1700, 2250, 2350, 2700, 3000, 3200, 3400, 3900};
-  //String windDirText[15] = {"SSW", "S", "WSW", "3", "SW", "W", "6", "ESE", "SE", "NNW", "NW", "ENE", "E", "NNE", "NE"}; //BLYNK does not seem to allow text
   String windDirText[15] = {"202.5", "180", "247.5", "000", "225", "270", "000", "112.5", "135", "337.5", "315", "67.5", "90", "22.5", "45"};
+  String windDirCardinalText[15] = {"SSW", "S", "WSW", "3", "SW", "W", "6", "ESE", "SE", "NNW", "NW", "ENE", "E", "NNE", "NE"};
   char buffer[10];
   int vin = analogRead(WIND_DIR_PIN);
 
@@ -72,12 +75,14 @@ void readWindDirection(struct sensorData *environment)
     if (vin < analogCompare[windPosition])
     {
       windDirection = windDirText[windPosition];
+      windCardinalDirection = windDirCardinalText[windPosition];
       break;
     }
   }
   MonPrintf("Analog value: %i Wind direction: %s  \n", vin, windDirection);
   windDirection.toCharArray(buffer, 5);
   environment->windDirection = atof(buffer);
+  strcpy(environment->windCardinalDirection, windCardinalDirection.c_str());
 }
 
 //=======================================================

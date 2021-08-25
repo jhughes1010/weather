@@ -43,6 +43,18 @@ const char mainTopic[20] = "MainTopic/";
 //#define METRIC
 
 //===========================================
+//Use optional NVM for backup
+//This is a failsafe for RESET events out of
+//system control
+//===========================================
+//#define USE_EEPROM
+
+//===========================================
+//BH1750 Enable
+//===========================================
+#define BH1750Enable
+
+//===========================================
 //Anemometer Calibration
 //===========================================
 //I see 2 switch pulls to GND per revolation. Not sure what others see

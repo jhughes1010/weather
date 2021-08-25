@@ -22,7 +22,7 @@ void SendDataMQTT (struct sensorData *environment)
   //client.setCallback(callback);
 
   while (!client.connected()) {
-    Serial.println("Connecting to MQTT...");
+    MonPrintf("Connecting to MQTT...");
 
     if (client.connect("ESP32Client", mqttUser, mqttPassword))
     {
@@ -40,6 +40,8 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
   MQTTPublishInt("windSpeed/", (int)environment->windSpeed, true);
   MQTTPublishInt("windDirection/", (int)environment->windDirection, true);
+  MQTTPublishString("windCardinalDirection/", environment->windCardinalDirection, true);
+  MQTTPublishInt("photoresistor/", (int)environment->photoresistor, true);
 #ifndef METRIC
   MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
   MQTTPublishFloat("rainfall24/", last24() * 0.011, true);
@@ -59,6 +61,31 @@ void SendDataMQTT (struct sensorData *environment)
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
+}
+
+//=======================================================================
+//  MQTTPublishString: routine to publish string
+//=======================================================================
+void MQTTPublishString(const char topic[], char *value, bool retain)
+{
+  char topicBuffer[256];
+  char payload[256];
+  int retryCount = 0;
+  int status = 0;
+
+  strcpy(topicBuffer, mainTopic);
+  strcat(topicBuffer, topic);
+  if (!client.connected()) reconnect();
+  client.loop();
+  sprintf(payload, "%s", value);
+  MonPrintf("%s: %s\n", topicBuffer, payload);
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topicBuffer, payload, retain);
+    MonPrintf("MQTT status: %i\n", status);
+    delay(50);
+    retryCount++;
+  }
 }
 
 //=======================================================================
