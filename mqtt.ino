@@ -38,7 +38,7 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishInt("boot/", (int)bootCount, true);
   MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
-  MQTTPublishInt("windSpeed/", (int)environment->windSpeed, true);
+  MQTTPublishFloat("windSpeed/", (int)environment->windSpeed, true);
   MQTTPublishInt("windDirection/", (int)environment->windDirection, true);
   MQTTPublishString("windCardinalDirection/", environment->windCardinalDirection, true);
   MQTTPublishInt("photoresistor/", (int)environment->photoresistor, true);

@@ -11,7 +11,8 @@
 //===========================================
 #include "esp_deep_sleep.h"
 #include "secrets.h"
-#include <WiFi.h>
+//#include <WiFi.h>
+#include <esp_wifi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>
 #include <DallasTemperature.h>
@@ -137,12 +138,15 @@ void setup()
 #endif
   temperatureSensor.begin();
 
-
   updateWake();
   wakeup_reason();
   if (WiFiEnable)
   {
     MonPrintf("Connecting to WiFi\n");
+    //Calibrate Clock - My ESP RTC is noticibly fast
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    printLocalTime();
+    printTimeNextWake();
     processSensorUpdates();
   }
 
@@ -175,10 +179,6 @@ void processSensorUpdates(void)
   readEEPROM(&rainfall);
 #endif
   wifi_connect();
-  //Calibrate Clock - My ESP RTC is noticibly fast
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
-  printTimeNextWake();
 
   //Get Sensor data
   readSensors(&environment);
@@ -206,6 +206,7 @@ void processSensorUpdates(void)
 #endif
 
   WiFi.disconnect();
+  esp_wifi_stop();
 }
 
 //===========================================================
