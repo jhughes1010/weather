@@ -11,7 +11,6 @@
 //===========================================
 #include "esp_deep_sleep.h"
 #include "secrets.h"
-//#include <WiFi.h>
 #include <esp_wifi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>
