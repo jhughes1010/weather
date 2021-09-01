@@ -50,10 +50,10 @@ void readBattery (struct sensorData *environment)
   float Vout;
   val = analogRead(VOLT_PIN);
   //this value may need tweaking for your voltage divider
-  //cabibration = 4.2V/analog value read @ 4.2V
+  //calibration = 4.2V/analog value read @ 4.2V
   environment->batteryADC = val;
   environment->batteryVoltage = val * batteryCalFactor;
-  MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
+  MonPrintf("Battery digital ADC :%i voltage: %6.2f\n", val, environment->batteryVoltage);
   //check for low battery situation
   if (environment->batteryVoltage < 3.78)
   {

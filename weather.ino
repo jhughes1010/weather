@@ -120,7 +120,6 @@ void setup()
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-
   Serial.begin(115200);
   delay(25);
 
@@ -130,18 +129,11 @@ void setup()
   BlinkLED(1);
   bootCount++;
 
-  //Initialize i2c and 1w sensors
-  Wire.begin();
-  bme.begin();
-#ifdef BH1750Enable
-  lightMeter.begin();
-#endif
-  temperatureSensor.begin();
-
   updateWake();
   wakeup_reason();
   if (WiFiEnable)
   {
+    sensorEnable();
     MonPrintf("Connecting to WiFi\n");
     //Calibrate Clock - My ESP RTC is noticibly fast
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -151,7 +143,7 @@ void setup()
   }
 
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
-  if (UpdateIntervalModified <= 0)
+  if (UpdateIntervalModified < 3)
   {
     UpdateIntervalModified = 3;
   }
@@ -189,10 +181,6 @@ void processSensorUpdates(void)
   clearRainfallHour(timeinfo.tm_hour + 1);
   rainTicks = 0;
 
-  //Start sensor housekeeping
-  addTipsToHour(rainTicks);
-  clearRainfallHour(timeinfo.tm_hour + 1);
-  rainTicks = 0;
   //Conditional write of rainfall data to EEPROM
 #ifdef USE_EEPROM
   conditionalWriteEEPROM(&rainfall);
@@ -245,6 +233,7 @@ void wakeup_reason()
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
       WiFiEnable = true;
+      //I manually call this line to zero out EEPROM array once and only once, then remove this line
       //jh initEEPROM(); //my debug only
       break;
   }
@@ -298,4 +287,17 @@ void BlinkLED(int count)
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);
   }
+}
+
+//===========================================
+// sensorEnable: Initialize i2c and 1w sensors
+//===========================================
+void sensorEnable(void)
+{
+  Wire.begin();
+  bme.begin();
+#ifdef BH1750Enable
+  lightMeter.begin();
+#endif
+  temperatureSensor.begin();
 }
