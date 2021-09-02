@@ -3,13 +3,13 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
-//version 1.2 RC1
-#define VERSION 1.2
+//version 1.3 RC1
+#define VERSION 1.3
 
 //=============================================
 // Changelog
 //=============================================
-/* v1.2 supports 24h rainfall data, not 23h
+/* v1.3 supports 24h rainfall data, not 23h
 
 
 
