@@ -86,6 +86,7 @@ struct historicalData
 {
   unsigned int hourlyRainfall[24];
   unsigned int hourlyCarryover;
+  unsigned int priorHour;
   unsigned int current60MinRainfall[12];
 };
 

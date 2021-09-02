@@ -16,9 +16,16 @@ void clearRainfall(void)
 //=======================================================================
 void clearRainfallHour(int hourPtr)
 {
+  //Clear carryover if hourPtr is not matching prior hourPtr value (we have a new hour)
+  if (rainfall.priorHour != hourPtr)
+  {
+    rainfall.hourlyCarryover = 0;
+  }
   //move contents of oldest hour to the carryover location and set hour to zero
-  rainfall.hourlyCarryover = rainfall.hourlyRainfall[hourPtr % 24];
+  rainfall.hourlyCarryover += rainfall.hourlyRainfall[hourPtr % 24];
   rainfall.hourlyRainfall[hourPtr % 24] = 0;
+
+  rainfall.priorHour = hourPtr;
 }
 
 //=======================================================================
