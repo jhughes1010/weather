@@ -6,6 +6,17 @@
 //version 1.2 RC1
 #define VERSION 1.2
 
+//=============================================
+// Changelog
+//=============================================
+/* v1.2 supports 24h rainfall data, not 23h
+
+
+
+
+
+*/
+
 //===========================================
 // Includes
 //===========================================
@@ -39,7 +50,7 @@
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
 #define LED_BUILTIN   2  //Diagnostics using built-in LED, may be set to 12 for newer boards that do not use devkit sockets
 #define SEC 1E6          //Multiplier for uS based math
-#define WDT_TIMEOUT 60
+#define WDT_TIMEOUT 60   //watchdog timer
 
 //===========================================
 // Externs
@@ -74,6 +85,7 @@ struct sensorData
 struct historicalData
 {
   unsigned int hourlyRainfall[24];
+  unsigned int hourlyCarryover;
   unsigned int current60MinRainfall[12];
 };
 

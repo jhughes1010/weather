@@ -24,7 +24,6 @@ void readTemperature (struct sensorData *environment)
 {
   MonPrintf("Requesting temperatures...\n");
   temperatureSensor.requestTemperatures();
-  MonPrintf("DONE");
   environment->temperatureC = temperatureSensor.getTempCByIndex(0);
 
   // Check if reading was successful
@@ -74,7 +73,7 @@ void readLux(struct sensorData *environment)
 }
 
 //=======================================================
-//  readPR: LUX sensor read
+//  readPR: photoresistor ADC read
 //=======================================================
 void readPR(struct sensorData *environment)
 {

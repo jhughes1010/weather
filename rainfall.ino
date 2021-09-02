@@ -16,6 +16,8 @@ void clearRainfall(void)
 //=======================================================================
 void clearRainfallHour(int hourPtr)
 {
+  //move contents of oldest hour to the carryover location and set hour to zero
+  rainfall.hourlyCarryover = rainfall.hourlyRainfall[hourPtr % 24];
   rainfall.hourlyRainfall[hourPtr % 24] = 0;
 }
 
@@ -41,7 +43,7 @@ void printHourlyArray (void)
 }
 
 //=======================================================================
-//  last24: return tip counter for last 24h (technically 23h)
+//  last24: return tip counter for last 24h
 //=======================================================================
 int last24(void)
 {
@@ -51,6 +53,9 @@ int last24(void)
   {
     totalRainfall += rainfall.hourlyRainfall[hour];
   }
+  //add carryover value
+  totalRainfall += rainfall.hourlyCarryover;
+
   MonPrintf("Total rainfall: %i\n", totalRainfall);
   return totalRainfall;
 }
