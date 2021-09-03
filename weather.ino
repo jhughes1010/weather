@@ -10,6 +10,8 @@
 // Changelog
 //=============================================
 /* v1.3 supports 24h rainfall data, not 23h
+ *      supports current 60 min rainfall, not
+ *      current "hour"
 
 
 

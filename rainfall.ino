@@ -88,7 +88,7 @@ int last24(void)
 
 
 //=======================================================================
-//  clearRainfallHour: zero out specific hour element of rainfall structure array
+//  clearRainfallMinute: zero out specific minute element of rainfall structure array
 //=======================================================================
 void clearRainfallMinute(int hourPtr)
 {
@@ -105,7 +105,7 @@ void clearRainfallMinute(int hourPtr)
 }
 
 //=======================================================================
-//  addTipsToHour: increment current hour tip count
+//  addTipsToMinute: increment current hour tip count
 //=======================================================================
 void addTipsToMinute(int count)
 {
@@ -114,21 +114,21 @@ void addTipsToMinute(int count)
 }
 
 //=======================================================================
-//  printHourlyArray: diagnostic routine to print minute rainfall array to terminal
+//  printMinuteArray: diagnostic routine to print minute rainfall array to terminal
 //=======================================================================
 void printMinuteArray (void)
 {
   int minute = 0;
   for (minute = 0; minute < 12; minute++)
   {
-    MonPrintf("Hour %i: %u\n", hourCount, rainfall.current60MinRainfall[minute]);
+    MonPrintf("Minute %i: %u\n", minute * 5, rainfall.current60MinRainfall[minute]);
   }
 }
 
 //=======================================================================
-//  last24: return tip counter for last 60 minutes
+//  last60min: return tip counter for last 60 minutes
 //=======================================================================
-int lastHour(void)
+int last60min(void)
 {
   int minute;
   int totalRainfall = 0;
