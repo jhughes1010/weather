@@ -11,6 +11,15 @@ void clearRainfall(void)
   memset(&rainfall, 0x00, sizeof(rainfall));
 }
 
+
+
+//=======================================================================
+//
+//  Hourly accumulation routines
+//
+//=======================================================================
+
+
 //=======================================================================
 //  clearRainfallHour: zero out specific hour element of rainfall structure array
 //=======================================================================
@@ -63,9 +72,75 @@ int last24(void)
   //add carryover value
   totalRainfall += rainfall.hourlyCarryover;
 
-  MonPrintf("Total rainfall: %i\n", totalRainfall);
+  MonPrintf("Total rainfall (last 24 hours): %i\n", totalRainfall);
   return totalRainfall;
 }
+
+
+//=======================================================================
+//
+//  Minute accumulation routines
+//
+//=======================================================================
+
+//=======================================================================
+//  clearRainfallHour: zero out specific hour element of rainfall structure array
+//=======================================================================
+void clearRainfallMinute(int hourPtr)
+{
+  //Clear carryover if hourPtr is not matching prior hourPtr value (we have a new hour)
+  if (rainfall.priorHour != hourPtr)
+  {
+    rainfall.hourlyCarryover = 0;
+  }
+  //move contents of oldest hour to the carryover location and set hour to zero
+  rainfall.hourlyCarryover += rainfall.hourlyRainfall[hourPtr % 24];
+  rainfall.hourlyRainfall[hourPtr % 24] = 0;
+
+  rainfall.priorHour = hourPtr;
+}
+
+//=======================================================================
+//  addTipsToHour: increment current hour tip count
+//=======================================================================
+void addTipsToMinute(int count)
+{
+  int hourPtr = timeinfo.tm_hour;
+  rainfall.hourlyRainfall[hourPtr] = rainfall.hourlyRainfall[hourPtr] + count;
+}
+
+//=======================================================================
+//  printHourlyArray: diagnostic routine to print hourly rainfall array to terminal
+//=======================================================================
+void printMinuteArray (void)
+{
+  int hourCount = 0;
+  for (hourCount = 0; hourCount < 24; hourCount++)
+  {
+    MonPrintf("Hour %i: %u\n", hourCount, rainfall.hourlyRainfall[hourCount]);
+  }
+}
+
+//=======================================================================
+//  last24: return tip counter for last 24h
+//=======================================================================
+int lastHour(void)
+{
+  int hour;
+  int totalRainfall = 0;
+  for (hour = 0; hour < 24; hour++)
+  {
+    totalRainfall += rainfall.hourlyRainfall[hour];
+  }
+  //add carryover value
+  totalRainfall += rainfall.minuteCarryover;
+
+  MonPrintf("Total rainfall (last 60 minutes): %i\n", totalRainfall);
+  return totalRainfall;
+}
+
+
+
 
 //=======================================================================
 //  rainTick: ISR for rain tip gauge count
