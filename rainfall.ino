@@ -82,6 +82,10 @@ int last24(void)
 //  Minute accumulation routines
 //
 //=======================================================================
+// NOTE: When speaking of minutes and minute array, we use 5 min as
+// minimum grouping for minute-by-minute rainfall
+
+
 
 //=======================================================================
 //  clearRainfallHour: zero out specific hour element of rainfall structure array
@@ -105,32 +109,32 @@ void clearRainfallMinute(int hourPtr)
 //=======================================================================
 void addTipsToMinute(int count)
 {
-  int hourPtr = timeinfo.tm_hour;
-  rainfall.hourlyRainfall[hourPtr] = rainfall.hourlyRainfall[hourPtr] + count;
+  int minute = timeinfo.tm_hour;
+  rainfall.current60MinRainfall[minute] = rainfall.current60MinRainfall[minute] + count;
 }
 
 //=======================================================================
-//  printHourlyArray: diagnostic routine to print hourly rainfall array to terminal
+//  printHourlyArray: diagnostic routine to print minute rainfall array to terminal
 //=======================================================================
 void printMinuteArray (void)
 {
-  int hourCount = 0;
-  for (hourCount = 0; hourCount < 24; hourCount++)
+  int minute = 0;
+  for (minute = 0; minute < 12; minute++)
   {
-    MonPrintf("Hour %i: %u\n", hourCount, rainfall.hourlyRainfall[hourCount]);
+    MonPrintf("Hour %i: %u\n", hourCount, rainfall.current60MinRainfall[minute]);
   }
 }
 
 //=======================================================================
-//  last24: return tip counter for last 24h
+//  last24: return tip counter for last 60 minutes
 //=======================================================================
 int lastHour(void)
 {
-  int hour;
+  int minute;
   int totalRainfall = 0;
-  for (hour = 0; hour < 24; hour++)
+  for (minute = 0; minute < 12; minute++)
   {
-    totalRainfall += rainfall.hourlyRainfall[hour];
+    totalRainfall += rainfall.current60MinRainfall[minute];
   }
   //add carryover value
   totalRainfall += rainfall.minuteCarryover;
