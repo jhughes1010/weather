@@ -3,6 +3,9 @@ weather station scratch code
 This is a dev area for working the deep sleep integration on the opengreenenergy weatherstation on instructables.com
 https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
+Discussions outside of the instructables website. This is my private website, but may be easier to discuss as I do not administer the instructables page.
+http://tunneldistrict.com/wp/topics/
+
 My build notes and ramblings can be found at https://jameshughes.atlassian.net/wiki/spaces/WSV/overview
 
 
