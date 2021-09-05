@@ -10,8 +10,9 @@
 // Changelog
 //=============================================
 /* v1.3 supports 24h rainfall data, not 23h
- *      supports current 60 min rainfall, not
- *      current "hour"
+        supports current 60 min rainfall, not
+        current "hour" that looses data at top
+        of the hour.
 
 
 
@@ -40,6 +41,7 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include <esp_task_wdt.h>
+#include "esp_system.h"
 
 //===========================================
 // Defines
@@ -81,6 +83,8 @@ struct sensorData
   int photoresistor;
   float batteryVoltage;
   int batteryADC;
+  unsigned int coreF;
+  unsigned int coreC;
 };
 
 //rainfall is stored here for historical data uses RTC

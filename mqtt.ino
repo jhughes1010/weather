@@ -38,7 +38,7 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishInt("boot/", (int)bootCount, true);
   MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
-  MQTTPublishFloat("windSpeed/", (int)environment->windSpeed, true);
+  MQTTPublishFloat("windSpeed/", environment->windSpeed, true);
   MQTTPublishInt("windDirection/", (int)environment->windDirection, true);
   MQTTPublishString("windCardinalDirection/", environment->windCardinalDirection, true);
   MQTTPublishInt("photoresistor/", (int)environment->photoresistor, true);
@@ -57,6 +57,8 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishFloat("pressure/", environment->barometricPressure, true);
   MQTTPublishFloat("caseTemperature/", environment->BMEtemperature, true);
   MQTTPublishInt("batteryADC/", (int)environment->batteryADC, true);
+  MQTTPublishInt("ESPcoreF/", (int)environment->coreF, true);
+  MQTTPublishInt("ESPcoreC/", (int)environment->coreC, true);
   MQTTPublishBool("lowBattery/", lowBattery, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();

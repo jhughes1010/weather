@@ -1,6 +1,11 @@
 OneWire oneWire(TEMP_PIN);
 DallasTemperature temperatureSensor(&oneWire);
 
+extern "C"
+{
+  uint8_t temprature_sens_read();
+}
+
 //=======================================================
 //  readSensors: Read all sensors and battery voltage
 //=======================================================
@@ -15,6 +20,7 @@ void readSensors(struct sensorData *environment)
   readBME(environment);
   readUV(environment);
   readBattery(environment);
+  readESPCoreTemp(environment);
 }
 
 //=======================================================
@@ -106,4 +112,14 @@ void readUV(struct sensorData *environment)
   MonPrintf("UV Index: %f\n", environment->UVIndex);
   MonPrintf("Vis: %i\n", uv.readVisible());
   MonPrintf("IR: %i\n", uv.readIR());
+}
+
+void readESPCoreTemp(struct sensorData *environment)
+{
+  unsigned int coreF, coreC;
+  coreF = temprature_sens_read();
+  coreC = (coreF - 32) * 5 / 9;
+
+  environment->coreF = coreF;
+  environment->coreC = coreC;
 }
