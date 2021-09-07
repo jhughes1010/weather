@@ -59,6 +59,7 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishInt("batteryADC/", (int)environment->batteryADC, true);
   MQTTPublishInt("ESPcoreF/", (int)environment->coreF, true);
   MQTTPublishInt("ESPcoreC/", (int)environment->coreC, true);
+  MQTTPublishInt("timeEnabled/", (int)elapsedTime, true);
   MQTTPublishBool("lowBattery/", lowBattery, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();

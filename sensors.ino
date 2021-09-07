@@ -66,6 +66,26 @@ void readBattery (struct sensorData *environment)
 }
 
 //=======================================================
+//  checkBatteryVoltage: set/reset low voltage flag only
+//=======================================================
+void checkBatteryVoltage (void)
+{
+  int adc;
+  float voltage;
+  adc = analogRead(VOLT_PIN);
+  voltage = adc * batteryCalFactor;
+  //MonPrintf("Battery digital ADC :%i voltage: %6.2f\n", environment->batteryADC, environment->batteryVoltage);
+  //check for low battery situation
+  if (voltage < 3.78)
+  {
+    lowBattery = true;
+  }
+  else
+  {
+    lowBattery = false;
+  }
+}
+//=======================================================
 //  readLux: LUX sensor read
 //=======================================================
 void readLux(struct sensorData *environment)

@@ -46,6 +46,8 @@
 //===========================================
 // Defines
 //===========================================
+//If you are using a Thomas Krebs designed PCB that does not use a standard devkit, place a #define KREBS_PCB in your secrets.h
+#ifndef KREBS_PCB
 #define WIND_SPD_PIN 14  //reed switch based anemometer count
 #define RAIN_PIN     25  //reed switch based tick counter on tip bucket
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
@@ -55,6 +57,17 @@
 #define LED_BUILTIN   2  //Diagnostics using built-in LED, may be set to 12 for newer boards that do not use devkit sockets
 #define SEC 1E6          //Multiplier for uS based math
 #define WDT_TIMEOUT 60   //watchdog timer
+
+#else
+#define WIND_SPD_PIN 26  //reed switch based anemometer count
+#define RAIN_PIN            25  //reed switch based tick counter on tip bucket
+#define WIND_DIR_PIN  35  //variable voltage divider output based on varying R network with reed switches
+#define PR_PIN                34  //photoresistor pin
+#define VOLT_PIN           33  //voltage divider for battery monitor
+#define TEMP_PIN          15  // DS18B20 hooked up to GPIO pin 15
+#define LED_PIN              14  //Diagnostics using built-in LED
+//#define MODE_PIN         12  //Load Switch
+#endif
 
 //===========================================
 // Externs
@@ -107,6 +120,7 @@ RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct historicalData rainfall;
 RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR unsigned int elapsedTime = 0;
 
 //===========================================
 // Global instantiation
@@ -270,6 +284,7 @@ void sleepyTime(long UpdateIntervalModified)
   //updateWake();
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  elapsedTime = (int)millis() / 1000;
   esp_deep_sleep_start();
 }
 
