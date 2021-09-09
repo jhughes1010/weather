@@ -14,6 +14,14 @@
         current "hour" that looses data at top
         of the hour.
 
+        lowBattery flag fix and multiplies wake time by 4
+        when battery is < 15 % remaining
+
+        Alternate pinout for Thomas Krebs PCB
+        design that does not use devkit ESP32
+
+
+
 
 
 
@@ -42,6 +50,7 @@
 #include "soc/rtc_cntl_reg.h"
 #include <esp_task_wdt.h>
 #include "esp_system.h"
+#include "driver/rtc_io.h"
 
 //===========================================
 // Defines
@@ -145,6 +154,11 @@ void IRAM_ATTR windTick(void);
 void setup()
 {
   long UpdateIntervalModified = 0;
+
+  setCpuFrequencyMhz (80);
+  rtc_gpio_init(GPIO_NUM_12);
+  rtc_gpio_set_direction(GPIO_NUM_12, RTC_GPIO_MODE_OUTPUT_ONLY);
+  rtc_gpio_set_level(GPIO_NUM_12, 1);
 
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
@@ -281,7 +295,7 @@ void sleepyTime(long UpdateIntervalModified)
 {
   Serial.println("\n\n\nGoing to sleep now...");
   Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
-  //updateWake();
+  rtc_gpio_set_level(GPIO_NUM_12, 0);
   esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   elapsedTime = (int)millis() / 1000;
