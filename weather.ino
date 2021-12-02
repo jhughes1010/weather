@@ -20,6 +20,8 @@
         Alternate pinout for Thomas Krebs PCB
         design that does not use devkit ESP32
 
+        remove esp_deep_sleep.h as it is not needed
+
 
 
 
@@ -31,7 +33,6 @@
 //===========================================
 // Includes
 //===========================================
-#include "esp_deep_sleep.h"
 #include "secrets.h"
 #include <esp_wifi.h>
 #include <time.h>
@@ -296,7 +297,7 @@ void sleepyTime(long UpdateIntervalModified)
   Serial.println("\n\n\nGoing to sleep now...");
   Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
   rtc_gpio_set_level(GPIO_NUM_12, 0);
-  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
+  esp_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   elapsedTime = (int)millis() / 1000;
   esp_deep_sleep_start();
