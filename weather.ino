@@ -3,13 +3,14 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
-//version 1.2 RC1
-#define VERSION 1.2
+
+#define VERSION "1.2.1"
+
+// 1.2.1    1-1-2022    hotfix to remove esp_deep_sleep.h (legacy header from ESP8266 project). Many users do not have the file if they've never compiled an 8266 project
 
 //===========================================
 // Includes
 //===========================================
-#include "esp_deep_sleep.h"
 #include "secrets.h"
 #include <WiFi.h>
 #include <time.h>
@@ -125,7 +126,7 @@ void setup()
 
   //Title message
   MonPrintf("\nWeather station - Deep sleep version.\n");
-  MonPrintf("Version %5.2f\n\n", VERSION);
+  MonPrintf("Version %s\n\n", VERSION);
   BlinkLED(1);
   bootCount++;
 
@@ -258,7 +259,7 @@ void sleepyTime(long UpdateIntervalModified)
   Serial.println("\n\n\nGoing to sleep now...");
   Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
   //updateWake();
-  esp_deep_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
+  esp_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
   esp_deep_sleep_start();
 }
