@@ -32,7 +32,7 @@ void updateWake (void)
   if (lowBattery)
   {
     MonPrintf("Flag set for low battery\n");
-    muliplierBatterySave = 4;
+    muliplierBatterySave = 10;
   }
   getLocalTime(&timeinfo);
   //180 added to wipe out any RTC timing error vs NTP server - causing 2 WAKES back to back
