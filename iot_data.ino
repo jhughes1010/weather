@@ -89,4 +89,7 @@ void sendData(struct sensorData *environment)
       delay(5000);
     }
   }
+  else if (App == "MQTT") {
+    SendDataMQTT(environment);
+  }
 }

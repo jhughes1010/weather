@@ -200,12 +200,6 @@ void processSensorUpdates(void)
 #endif
   //send sensor data to IOT destination
   sendData(&environment);
-
-  //send sensor data to MQTT
-#ifdef MQTT
-  SendDataMQTT(&environment);
-#endif
-
   WiFi.disconnect();
 }
 
