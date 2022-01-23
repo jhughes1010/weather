@@ -110,7 +110,7 @@ void readUV(struct sensorData *environment)
 {
   if (! uv.begin()) {
     Serial.println("Didn't find Si1145");
-    environment->UVIndex = 0;
+    environment->UVIndex = -1;
   }
   else{
     environment->UVIndex = uv.readUV() / 100;
