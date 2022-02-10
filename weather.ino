@@ -348,6 +348,7 @@ void sensorEnable(void)
 {
   Wire.begin();
   bme.begin();
+  uv.begin();
 #ifdef BH1750Enable
   lightMeter.begin();
 #endif
