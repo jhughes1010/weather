@@ -24,6 +24,8 @@
 
         modified the #include to clearly discern system includes <file.h>
 
+        uv.begin added to sensorEnable()
+
 
 
 
@@ -113,8 +115,9 @@ struct sensorData
 };
 
 //rainfall is stored here for historical data uses RTC
-struct historicalData
+struct rainfallData
 {
+  unsigned int intervalRainfall;
   unsigned int hourlyRainfall[24];
   unsigned int current60MinRainfall[12];
   unsigned int hourlyCarryover;
@@ -130,7 +133,7 @@ struct historicalData
 RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
-RTC_DATA_ATTR struct historicalData rainfall;
+RTC_DATA_ATTR struct rainfallData rainfall;
 RTC_DATA_ATTR int bootCount = 0;
 RTC_DATA_ATTR unsigned int elapsedTime = 0;
 
@@ -226,8 +229,12 @@ void processSensorUpdates(void)
   //Get Sensor data
   readSensors(&environment);
 
+  //move rainTicks into interval container
+  rainfall.intervalRainfall = rainTicks;
+
   //move rainTicks into hourly containers
   MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
+  
   addTipsToHour(rainTicks);
   clearRainfallHour(timeinfo.tm_hour + 1);
   rainTicks = 0;

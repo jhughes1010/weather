@@ -43,9 +43,11 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishString("windCardinalDirection/", environment->windCardinalDirection, true);
   MQTTPublishInt("photoresistor/", (int)environment->photoresistor, true);
 #ifndef METRIC
+  MQTTPublishFloat("rainfallInterval/", rainfall.intervalRainfall * 0.011, true);
   MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
   MQTTPublishFloat("rainfall24/", last24() * 0.011, true);
 #else
+  MQTTPublishFloat("rainfallInterval/", rainfall.intervalRainfall * 0.011 * 25.4, true);
   MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4, true);
   MQTTPublishFloat("rainfall24/", last24() * 0.011 * 25.4, true);
 #endif
