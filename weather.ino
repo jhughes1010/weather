@@ -26,6 +26,11 @@
 
         uv.begin added to sensorEnable()
 
+        renamed historicalData to rainfallData and added rainfallInterval as an additional mqtt topic for non historical accumulation
+
+        addred rssi topic on mqtt publish listing
+
+
 
 
 
@@ -135,6 +140,7 @@ RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct rainfallData rainfall;
 RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR long rssi;
 RTC_DATA_ATTR unsigned int elapsedTime = 0;
 
 //===========================================
@@ -224,7 +230,7 @@ void processSensorUpdates(void)
 #ifdef USE_EEPROM
   readEEPROM(&rainfall);
 #endif
-  wifi_connect();
+  rssi = wifi_connect();
 
   //Get Sensor data
   readSensors(&environment);
@@ -234,7 +240,7 @@ void processSensorUpdates(void)
 
   //move rainTicks into hourly containers
   MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
-  
+
   addTipsToHour(rainTicks);
   clearRainfallHour(timeinfo.tm_hour + 1);
   rainTicks = 0;

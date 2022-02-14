@@ -36,6 +36,7 @@ void SendDataMQTT (struct sensorData *environment)
     }
   }
   MQTTPublishInt("boot/", (int)bootCount, true);
+  MQTTPublishLong("rssi/", rssi, true);
   MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
   MQTTPublishFloat("windSpeed/", environment->windSpeed, true);
@@ -108,6 +109,32 @@ void MQTTPublishInt(const char topic[], int value, bool retain)
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%i", value);
+  MonPrintf("%s: %s\n", topicBuffer, payload);
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topicBuffer, payload, retain);
+    MonPrintf("MQTT status: %i\n", status);
+    delay(50);
+    retryCount++;
+  }
+}
+
+
+//=======================================================================
+//  MQTTPublishLong: routine to publish int values as strings
+//=======================================================================
+void MQTTPublishLong(const char topic[], long value, bool retain)
+{
+  char topicBuffer[256];
+  char payload[256];
+  int retryCount = 0;
+  int status = 0;
+
+  strcpy(topicBuffer, mainTopic);
+  strcat(topicBuffer, topic);
+  if (!client.connected()) reconnect();
+  client.loop();
+  sprintf(payload, "%l", value);
   MonPrintf("%s: %s\n", topicBuffer, payload);
   while (!status && retryCount < 5)
   {

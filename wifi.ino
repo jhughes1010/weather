@@ -1,8 +1,9 @@
 //=======================================================================
 //  wifi_connect: connect to WiFi or explicitly connect to Blynk, if used
 //=======================================================================
-void wifi_connect()
+long wifi_connect()
 {
+  long wifi_signal;
 
   //delay(5000);
   if (App == "BLYNK")  // for posting datas to Blynk App
@@ -24,10 +25,12 @@ void wifi_connect()
       delay(500);
     }
     MonPrintf("WiFi connected\n");
+    wifi_signal = WiFi.RSSI();
   }
   else
   {
     //WiFi.begin(ssid, pass);
     MonPrintf(" is not a valid application");
   }
+  return wifi_signal;
 }
