@@ -108,8 +108,14 @@ void readBME(struct sensorData *environment)
 //=======================================================
 void readUV(struct sensorData *environment)
 {
-  environment->UVIndex = uv.readUV() / 100;
-  MonPrintf("UV Index: %f\n", environment->UVIndex);
-  MonPrintf("Vis: %i\n", uv.readVisible());
-  MonPrintf("IR: %i\n", uv.readIR());
+  if (! uv.begin()) {
+    Serial.println("Didn't find Si1145");
+    environment->UVIndex = -1;
+  }
+  else{
+    environment->UVIndex = uv.readUV() / 100;
+    MonPrintf("UV Index: %f\n", environment->UVIndex);
+    MonPrintf("Vis: %i\n", uv.readVisible()); 
+    MonPrintf("IR: %i\n", uv.readIR());
+  }
 }
