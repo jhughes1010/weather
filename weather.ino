@@ -4,9 +4,13 @@
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
-#define VERSION "1.2.1"
+#define VERSION "1.2.2"
 
 // 1.2.1    1-1-2022    hotfix to remove esp_deep_sleep.h (legacy header from ESP8266 project). Many users do not have the file if they've never compiled an 8266 project
+// 1.2.2    4-4-2022    pull request from https://github.com/tkoeberl
+//                       1. Makes MQTT an official choice, not an afterthought
+//                       2. uv.begin was missing, now present
+//                       3. I changed sec.h to reflect new MQTT choice
 
 //===========================================
 // Includes

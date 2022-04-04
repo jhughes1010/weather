@@ -74,9 +74,9 @@ const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (60s) testing
 
 
 
-//========================= Enable Blynk or Thingspeak ===================================
+//========================= Enable Blynk, MQTT or Thingspeak ===================================
 
 // configuration control constant for use of either Blynk or Thingspeak
-const String App = "BLYNK";         //  alternative is line below
+//const String App = "BLYNK";         //  alternative is line below
 //const String App = "Thingspeak"; //  alternative is line above
-#define MQTT
+const String App = "MQTT";         //  alternative is line below
