@@ -30,6 +30,8 @@
 
         addred rssi topic on mqtt publish listing
 
+        clearer reporting to console on sensor.begin statuses. Program should run with no sensors now and not hang
+
 
 
 
@@ -131,6 +133,14 @@ struct rainfallData
   unsigned int priorMinute;
 };
 
+struct sensorStatus
+{
+  int uv;
+  int bme;
+  int lightMeter;
+  int temperature;
+};
+
 
 //===========================================
 // RTC Memory storage
@@ -153,6 +163,7 @@ BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
 bool WiFiEnable = false;
+struct sensorStatus status;
 
 //===========================================
 // ISR Prototypes
@@ -194,6 +205,7 @@ void setup()
   if (WiFiEnable)
   {
     sensorEnable();
+    sensorStatusToConsole();
     MonPrintf("Connecting to WiFi\n");
     //Calibrate Clock - My ESP RTC is noticibly fast
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -359,11 +371,23 @@ void BlinkLED(int count)
 //===========================================
 void sensorEnable(void)
 {
-  Wire.begin();
-  bme.begin();
-  uv.begin();
+  status.temperature = Wire.begin();
+  status.bme = bme.begin();
+  status.uv = uv.begin();
 #ifdef BH1750Enable
-  lightMeter.begin();
+  status.lightMeter = lightMeter.begin();
 #endif
-  temperatureSensor.begin();
+  temperatureSensor.begin();                //returns void - cannot directly check
+}
+
+//===========================================
+// sensorStatusToConsole: Output .begin return values
+//===========================================
+void sensorStatusToConsole(void)
+{
+  MonPrintf("----- Sensor Statuses -----\n");
+  MonPrintf("BME status:         %i\n", status.bme);
+  MonPrintf("UV status:          %i\n", status.uv);
+  MonPrintf("lightMeter status:  %i\n", status.lightMeter);
+  MonPrintf("temperature status: %i\n\n", status.temperature);
 }

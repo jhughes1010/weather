@@ -91,7 +91,14 @@ void checkBatteryVoltage (void)
 void readLux(struct sensorData *environment)
 {
 #ifdef BH1750Enable
-  environment->lux = lightMeter.readLightLevel();
+  if (status.lightMeter)
+  {
+    environment->lux = lightMeter.readLightLevel();
+  }
+  else
+  {
+    environment->lux = -1;
+  }
 #else
   environment->lux = -3;
 #endif
@@ -115,12 +122,24 @@ void readPR(struct sensorData *environment)
 //=======================================================
 void readBME(struct sensorData *environment)
 {
+  if (status.bme)
+  {
 #ifndef METRIC
-  bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Fahrenheit, BME280::PresUnit_inHg);
+    bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Fahrenheit, BME280::PresUnit_inHg);
 #else
-  bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
 #endif
+
+  }
+  else
+  {
+    //set to insane values
+    environment->barometricPressure = -100;
+    environment->BMEtemperature = -100;
+    environment->humidity = -100;
+  }
   MonPrintf("BME barometric pressure: %6.2f  BME temperature: %6.2f  BME humidity: %6.2f\n", environment->barometricPressure, environment->BMEtemperature, environment->humidity);
+
 }
 
 //=======================================================
@@ -128,7 +147,14 @@ void readBME(struct sensorData *environment)
 //=======================================================
 void readUV(struct sensorData *environment)
 {
-  environment->UVIndex = uv.readUV() / 100;
+  if (status.uv)
+  {
+    environment->UVIndex = uv.readUV() / 100;
+  }
+  else
+  {
+    environment->UVIndex = -1;
+  }
   MonPrintf("UV Index: %f\n", environment->UVIndex);
   MonPrintf("Vis: %i\n", uv.readVisible());
   MonPrintf("IR: %i\n", uv.readIR());
