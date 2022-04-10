@@ -3,23 +3,18 @@
 //=======================================================================
 long wifi_connect()
 {
-  long wifi_signal;
+  long wifi_signal = 0;
 
-  //delay(5000);
+  MonPrintf("Connecting to %s\n", App);
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
-    MonPrintf("Connecting to %s\n", App);
+
     Blynk.begin(auth, ssid, pass);
   }
-  else if (App == "Thingspeak")  // for posting datas to Thingspeak website
+  else if ((App == "Thingspeak") || (App == "MQTT")) // for posting datas to Thingspeak website
   {
     MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
-    //WiFi.persistent(false);
-    //WiFi.setAutoConnect(false);
-    //WiFi.setAutoReconnect(true);
-    //WiFi.setTxPower(WIFI_POWER_2dBm);
-
     while (WiFi.status() != WL_CONNECTED)
     {
       delay(500);
@@ -29,7 +24,6 @@ long wifi_connect()
   }
   else
   {
-    //WiFi.begin(ssid, pass);
     MonPrintf(" is not a valid application");
   }
   return wifi_signal;

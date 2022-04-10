@@ -204,6 +204,7 @@ void setup()
   wakeup_reason();
   if (WiFiEnable)
   {
+    rssi = wifi_connect();
     sensorEnable();
     sensorStatusToConsole();
     MonPrintf("Connecting to WiFi\n");
@@ -212,6 +213,8 @@ void setup()
     printLocalTime();
     printTimeNextWake();
     processSensorUpdates();
+    WiFi.disconnect();
+    esp_wifi_stop();
   }
 
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
@@ -242,7 +245,7 @@ void processSensorUpdates(void)
 #ifdef USE_EEPROM
   readEEPROM(&rainfall);
 #endif
-  rssi = wifi_connect();
+  //rssi = wifi_connect();
 
   //Get Sensor data
   readSensors(&environment);
@@ -265,12 +268,10 @@ void processSensorUpdates(void)
   sendData(&environment);
 
   //send sensor data to MQTT
-#ifdef MQTT
-  SendDataMQTT(&environment);
-#endif
-
-  WiFi.disconnect();
-  esp_wifi_stop();
+  if (app == "MQTT")
+  {
+    SendDataMQTT(&environment);
+  }
 }
 
 //===========================================================
