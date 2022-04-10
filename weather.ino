@@ -150,7 +150,6 @@ RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
 RTC_DATA_ATTR struct rainfallData rainfall;
 RTC_DATA_ATTR int bootCount = 0;
-RTC_DATA_ATTR long rssi;
 RTC_DATA_ATTR unsigned int elapsedTime = 0;
 
 //===========================================
@@ -164,6 +163,7 @@ Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
 bool WiFiEnable = false;
 struct sensorStatus status;
+long rssi = 0;
 
 //===========================================
 // ISR Prototypes
@@ -245,8 +245,6 @@ void processSensorUpdates(void)
 #ifdef USE_EEPROM
   readEEPROM(&rainfall);
 #endif
-  //rssi = wifi_connect();
-
   //Get Sensor data
   readSensors(&environment);
 
@@ -268,7 +266,7 @@ void processSensorUpdates(void)
   sendData(&environment);
 
   //send sensor data to MQTT
-  if (app == "MQTT")
+  if (App == "MQTT")
   {
     SendDataMQTT(&environment);
   }

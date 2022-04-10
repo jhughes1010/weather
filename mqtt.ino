@@ -36,6 +36,7 @@ void SendDataMQTT (struct sensorData *environment)
     }
   }
   MQTTPublishInt("boot/", (int)bootCount, true);
+  Serial.println(rssi);
   MQTTPublishLong("rssi/", rssi, true);
   MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
@@ -134,6 +135,7 @@ void MQTTPublishLong(const char topic[], long value, bool retain)
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
   client.loop();
+  MonPrintf("RSSI: %l",value);
   sprintf(payload, "%l", value);
   MonPrintf("%s: %s\n", topicBuffer, payload);
   while (!status && retryCount < 5)
