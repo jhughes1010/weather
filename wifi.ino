@@ -22,6 +22,17 @@ long wifi_connect()
     MonPrintf("WiFi connected\n");
     wifi_signal = WiFi.RSSI();
   }
+  else if (App == "MQTT")  // for posting datas to Thingspeak website
+  {
+    MonPrintf("Connecting to WiFi\n");
+    WiFi.begin(ssid, pass);
+
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      delay(500);
+    }
+    MonPrintf("WiFi connected\n");
+  }  
   else
   {
     MonPrintf(" is not a valid application");

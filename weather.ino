@@ -3,6 +3,7 @@
 // jhughes1010@gmail.com
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
+
 //version 1.3 RC1
 #define VERSION 1.3
 
@@ -196,7 +197,7 @@ void setup()
 
   //Title message
   MonPrintf("\nWeather station - Deep sleep version.\n");
-  MonPrintf("Version %5.2f\n\n", VERSION);
+  MonPrintf("Version %s\n\n", VERSION);
   BlinkLED(1);
   bootCount++;
 
@@ -263,7 +264,6 @@ void processSensorUpdates(void)
 #endif
   //send sensor data to IOT destination
   sendData(&environment);
-
   //send sensor data to MQTT
   if (App == "MQTT")
   {
@@ -321,6 +321,7 @@ void sleepyTime(long UpdateIntervalModified)
 {
   Serial.println("\n\n\nGoing to sleep now...");
   Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
+
   rtc_gpio_set_level(GPIO_NUM_12, 0);
   esp_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
