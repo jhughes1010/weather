@@ -207,7 +207,6 @@ void setup()
     rssi = wifi_connect();
     sensorEnable();
     sensorStatusToConsole();
-    MonPrintf("Connecting to WiFi\n");
     //Calibrate Clock - My ESP RTC is noticibly fast
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
     printLocalTime();
