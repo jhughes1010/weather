@@ -36,16 +36,19 @@ void SendDataMQTT (struct sensorData *environment)
     }
   }
   MQTTPublishInt("boot/", (int)bootCount, true);
+  MQTTPublishLong("rssi/", rssi, true);
   MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
   MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
-  MQTTPublishInt("windSpeed/", (int)environment->windSpeed, true);
+  MQTTPublishFloat("windSpeed/", environment->windSpeed, true);
   MQTTPublishInt("windDirection/", (int)environment->windDirection, true);
   MQTTPublishString("windCardinalDirection/", environment->windCardinalDirection, true);
   MQTTPublishInt("photoresistor/", (int)environment->photoresistor, true);
 #ifndef METRIC
+  MQTTPublishFloat("rainfallInterval/", rainfall.intervalRainfall * 0.011, true);
   MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
   MQTTPublishFloat("rainfall24/", last24() * 0.011, true);
 #else
+  MQTTPublishFloat("rainfallInterval/", rainfall.intervalRainfall * 0.011 * 25.4, true);
   MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4, true);
   MQTTPublishFloat("rainfall24/", last24() * 0.011 * 25.4, true);
 #endif
@@ -57,6 +60,9 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublishFloat("pressure/", environment->barometricPressure, true);
   MQTTPublishFloat("caseTemperature/", environment->BMEtemperature, true);
   MQTTPublishInt("batteryADC/", (int)environment->batteryADC, true);
+  MQTTPublishInt("ESPcoreF/", (int)environment->coreF, true);
+  MQTTPublishInt("ESPcoreC/", (int)environment->coreC, true);
+  MQTTPublishInt("timeEnabled/", (int)elapsedTime, true);
   MQTTPublishBool("lowBattery/", lowBattery, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
@@ -103,6 +109,32 @@ void MQTTPublishInt(const char topic[], int value, bool retain)
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%i", value);
+  MonPrintf("%s: %s\n", topicBuffer, payload);
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topicBuffer, payload, retain);
+    MonPrintf("MQTT status: %i\n", status);
+    delay(50);
+    retryCount++;
+  }
+}
+
+
+//=======================================================================
+//  MQTTPublishLong: routine to publish int values as strings
+//=======================================================================
+void MQTTPublishLong(const char topic[], long value, bool retain)
+{
+  char topicBuffer[256];
+  char payload[256];
+  int retryCount = 0;
+  int status = 0;
+
+  strcpy(topicBuffer, mainTopic);
+  strcat(topicBuffer, topic);
+  if (!client.connected()) reconnect();
+  client.loop();
+  sprintf(payload, "%li", value);
   MonPrintf("%s: %s\n", topicBuffer, payload);
   while (!status && retryCount < 5)
   {

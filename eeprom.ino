@@ -4,7 +4,7 @@
 //========================================================================
 //  readEEPROM: Read historicalData from NVM
 //========================================================================
-void readEEPROM(struct historicalData *rainfall)
+void readEEPROM(struct rainfallData *rainfall)
 {
   int structSize;
   byte buffer[200];
@@ -12,7 +12,7 @@ void readEEPROM(struct historicalData *rainfall)
   bool nonZero = false;
   int address = 0x0000;
 
-  structSize = sizeof(historicalData);
+  structSize = sizeof(rainfallData);
   memset(buffer, 0, sizeof(structSize));
 
   //Send dummy write to set addpress register of NVM
@@ -51,7 +51,7 @@ void readEEPROM(struct historicalData *rainfall)
 // boot must be >1 in order for a write to take place, array will never
 // be written on boot = 1
 //========================================================================
-void writeEEPROM(struct historicalData *rainfall)
+void writeEEPROM(struct rainfallData *rainfall)
 {
   byte buffer[200];
   int structSize;
@@ -61,7 +61,7 @@ void writeEEPROM(struct historicalData *rainfall)
   int page = 0;
 
 
-  structSize = sizeof(historicalData);
+  structSize = sizeof(rainfallData);
   memcpy(buffer, rainfall, structSize);
   for (page = 0; (page * pageSize) < structSize; page++)
   {
@@ -91,7 +91,7 @@ void initEEPROM(void)
 {
   int structSize;
   int x;
-  structSize = sizeof(historicalData);
+  structSize = sizeof(rainfallData);
   MonPrintf("sizeof int: %i\n", sizeof(int));
   for (x = 0; x < structSize; x++)
   {
@@ -107,14 +107,14 @@ void initEEPROM(void)
 //========================================================================
 //  conditionalWriteEEPROM: Only write EEPROM if something has changed
 //========================================================================
-void conditionalWriteEEPROM(struct historicalData *rainfall)
+void conditionalWriteEEPROM(struct rainfallData *rainfall)
 {
-  struct historicalData historyBuffer;
+  struct rainfallData historyBuffer;
   bool match = true;
   int structSize;
   int x;
 
-  structSize = sizeof(historicalData);
+  structSize = sizeof(rainfallData);
 
   readEEPROM(&historyBuffer);
 

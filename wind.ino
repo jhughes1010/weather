@@ -13,7 +13,6 @@ void readWindSpeed(struct sensorData *environment )
 {
   float windSpeed = 0;
   int position;
-  //int msBetweenSamples = 0;
   long msTotal = 0;
   int samples = 0;
 
@@ -24,7 +23,6 @@ void readWindSpeed(struct sensorData *environment )
   {
     for (position = 1; position < 7; position++)
     {
-      //msBetweenSamples = tickTime[position + 1] - tickTime[position];
       if (tickTime[position])
       {
         msTotal += tickTime[position];

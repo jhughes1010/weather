@@ -1,6 +1,11 @@
 OneWire oneWire(TEMP_PIN);
 DallasTemperature temperatureSensor(&oneWire);
 
+extern "C"
+{
+  uint8_t temprature_sens_read();
+}
+
 //=======================================================
 //  readSensors: Read all sensors and battery voltage
 //=======================================================
@@ -15,6 +20,7 @@ void readSensors(struct sensorData *environment)
   readBME(environment);
   readUV(environment);
   readBattery(environment);
+  readESPCoreTemp(environment);
 }
 
 //=======================================================
@@ -24,7 +30,6 @@ void readTemperature (struct sensorData *environment)
 {
   MonPrintf("Requesting temperatures...\n");
   temperatureSensor.requestTemperatures();
-  MonPrintf("DONE");
   environment->temperatureC = temperatureSensor.getTempCByIndex(0);
 
   // Check if reading was successful
@@ -46,14 +51,9 @@ void readTemperature (struct sensorData *environment)
 //=======================================================
 void readBattery (struct sensorData *environment)
 {
-  int val;
-  float Vout;
-  val = analogRead(VOLT_PIN);
-  //this value may need tweaking for your voltage divider
-  //cabibration = 4.2V/analog value read @ 4.2V
-  environment->batteryADC = val;
-  environment->batteryVoltage = val * batteryCalFactor;
-  MonPrintf("Battery digital :%i voltage: %6.2f\n", val, environment->batteryVoltage);
+  environment->batteryADC = analogRead(VOLT_PIN);
+  environment->batteryVoltage = environment->batteryADC * batteryCalFactor;
+  MonPrintf("Battery digital ADC :%i voltage: %6.2f\n", environment->batteryADC, environment->batteryVoltage);
   //check for low battery situation
   if (environment->batteryVoltage < 3.78)
   {
@@ -66,12 +66,39 @@ void readBattery (struct sensorData *environment)
 }
 
 //=======================================================
+//  checkBatteryVoltage: set/reset low voltage flag only
+//=======================================================
+void checkBatteryVoltage (void)
+{
+  int adc;
+  float voltage;
+  adc = analogRead(VOLT_PIN);
+  voltage = adc * batteryCalFactor;
+  //MonPrintf("Battery digital ADC :%i voltage: %6.2f\n", environment->batteryADC, environment->batteryVoltage);
+  //check for low battery situation
+  if (voltage < 3.78)
+  {
+    lowBattery = true;
+  }
+  else
+  {
+    lowBattery = false;
+  }
+}
+//=======================================================
 //  readLux: LUX sensor read
 //=======================================================
 void readLux(struct sensorData *environment)
 {
 #ifdef BH1750Enable
-  environment->lux = lightMeter.readLightLevel();
+  if (status.lightMeter)
+  {
+    environment->lux = lightMeter.readLightLevel();
+  }
+  else
+  {
+    environment->lux = -1;
+  }
 #else
   environment->lux = -3;
 #endif
@@ -79,7 +106,7 @@ void readLux(struct sensorData *environment)
 }
 
 //=======================================================
-//  readPR: LUX sensor read
+//  readPR: photoresistor ADC read
 //=======================================================
 void readPR(struct sensorData *environment)
 {
@@ -95,12 +122,24 @@ void readPR(struct sensorData *environment)
 //=======================================================
 void readBME(struct sensorData *environment)
 {
+  if (status.bme)
+  {
 #ifndef METRIC
-  bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Fahrenheit, BME280::PresUnit_inHg);
+    bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Fahrenheit, BME280::PresUnit_inHg);
 #else
-  bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
+    bme.read(environment->barometricPressure, environment->BMEtemperature, environment->humidity, BME280::TempUnit_Celsius, BME280::PresUnit_Pa);
 #endif
+
+  }
+  else
+  {
+    //set to insane values
+    environment->barometricPressure = -100;
+    environment->BMEtemperature = -100;
+    environment->humidity = -100;
+  }
   MonPrintf("BME barometric pressure: %6.2f  BME temperature: %6.2f  BME humidity: %6.2f\n", environment->barometricPressure, environment->BMEtemperature, environment->humidity);
+
 }
 
 //=======================================================
@@ -108,14 +147,25 @@ void readBME(struct sensorData *environment)
 //=======================================================
 void readUV(struct sensorData *environment)
 {
-  if (! uv.begin()) {
-    Serial.println("Didn't find Si1145");
+  if (status.uv)
+  {
+    environment->UVIndex = uv.readUV() / 100;
+  }
+  else
+  {
     environment->UVIndex = -1;
   }
-  else{
-    environment->UVIndex = uv.readUV() / 100;
-    MonPrintf("UV Index: %f\n", environment->UVIndex);
-    MonPrintf("Vis: %i\n", uv.readVisible()); 
-    MonPrintf("IR: %i\n", uv.readIR());
-  }
+  MonPrintf("UV Index: %f\n", environment->UVIndex);
+  MonPrintf("Vis: %i\n", uv.readVisible());
+  MonPrintf("IR: %i\n", uv.readIR());
+}
+
+void readESPCoreTemp(struct sensorData *environment)
+{
+  unsigned int coreF, coreC;
+  coreF = temprature_sens_read();
+  coreC = (coreF - 32) * 5 / 9;
+
+  environment->coreF = coreF;
+  environment->coreC = coreC;
 }

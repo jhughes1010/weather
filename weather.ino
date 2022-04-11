@@ -4,38 +4,72 @@
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
-#define VERSION "1.2.2"
+//version 1.3 RC1
+#define VERSION 1.3
 
-// 1.2.1    1-1-2022    hotfix to remove esp_deep_sleep.h (legacy header from ESP8266 project). Many users do not have the file if they've never compiled an 8266 project
-// 1.2.2    4-4-2022    pull request from https://github.com/tkoeberl
-//                       1. Makes MQTT an official choice, not an afterthought
-//                       2. uv.begin was missing, now present
-//                       3. I changed sec.h to reflect new MQTT choice
+//=============================================
+// Changelog
+//=============================================
+/* v1.3 supports 24h rainfall data, not 23h
+        supports current 60 min rainfall, not
+        current "hour" that looses data at top
+        of the hour.
+
+        lowBattery flag fix and multiplies wake time by 10
+        when battery is < 15 % remaining
+
+        Alternate pinout for Thomas Krebs PCB
+        design that does not use devkit ESP32
+
+        remove esp_deep_sleep.h as it is not needed
+
+        modified the #include to clearly discern system includes <file.h>
+
+        uv.begin added to sensorEnable()
+
+        renamed historicalData to rainfallData and added rainfallInterval as an additional mqtt topic for non historical accumulation
+
+        addred rssi topic on mqtt publish listing
+
+        clearer reporting to console on sensor.begin statuses. Program should run with no sensors now and not hang
+
+
+
+
+
+
+
+
+*/
 
 //===========================================
 // Includes
 //===========================================
 #include "secrets.h"
-#include <WiFi.h>
+#include <esp_wifi.h>
 #include <time.h>
 #include <BlynkSimpleEsp32.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
-#include "Wire.h"
+#include <Wire.h>
 #ifdef BH1750Enable
 #include <BH1750.h>
 #endif
 #include <BME280I2C.h>
-#include "Adafruit_SI1145.h"
+#include <Adafruit_SI1145.h>
 #include <stdarg.h>
 #include <PubSubClient.h>
-#include "soc/soc.h"
-#include "soc/rtc_cntl_reg.h"
+#include <soc/soc.h>
+#include <soc/rtc_cntl_reg.h>
 #include <esp_task_wdt.h>
+#include <esp_system.h>
+#include <driver/rtc_io.h>
 
 //===========================================
 // Defines
 //===========================================
+//If you are using a Thomas Krebs designed PCB that does not use a standard devkit, place a #define KREBS_PCB in your secrets.h
+#ifndef KREBS_PCB
 #define WIND_SPD_PIN 14  //reed switch based anemometer count
 #define RAIN_PIN     25  //reed switch based tick counter on tip bucket
 #define WIND_DIR_PIN 35  //variable voltage divider output based on varying R network with reed switches
@@ -44,7 +78,18 @@
 #define TEMP_PIN      4  // DS18B20 hooked up to GPIO pin 4
 #define LED_BUILTIN   2  //Diagnostics using built-in LED, may be set to 12 for newer boards that do not use devkit sockets
 #define SEC 1E6          //Multiplier for uS based math
-#define WDT_TIMEOUT 60
+#define WDT_TIMEOUT 60   //watchdog timer
+
+#else
+#define WIND_SPD_PIN 26  //reed switch based anemometer count
+#define RAIN_PIN            25  //reed switch based tick counter on tip bucket
+#define WIND_DIR_PIN  35  //variable voltage divider output based on varying R network with reed switches
+#define PR_PIN                34  //photoresistor pin
+#define VOLT_PIN           33  //voltage divider for battery monitor
+#define TEMP_PIN          15  // DS18B20 hooked up to GPIO pin 15
+#define LED_PIN              14  //Diagnostics using built-in LED
+//#define MODE_PIN         12  //Load Switch
+#endif
 
 //===========================================
 // Externs
@@ -73,13 +118,28 @@ struct sensorData
   int photoresistor;
   float batteryVoltage;
   int batteryADC;
+  unsigned int coreF;
+  unsigned int coreC;
 };
 
 //rainfall is stored here for historical data uses RTC
-struct historicalData
+struct rainfallData
 {
+  unsigned int intervalRainfall;
   unsigned int hourlyRainfall[24];
   unsigned int current60MinRainfall[12];
+  unsigned int hourlyCarryover;
+  unsigned int priorHour;
+  unsigned int minuteCarryover;
+  unsigned int priorMinute;
+};
+
+struct sensorStatus
+{
+  int uv;
+  int bme;
+  int lightMeter;
+  int temperature;
 };
 
 
@@ -89,8 +149,9 @@ struct historicalData
 RTC_DATA_ATTR volatile int rainTicks = 0;
 RTC_DATA_ATTR int lastHour = 0;
 RTC_DATA_ATTR time_t nextUpdate;
-RTC_DATA_ATTR struct historicalData rainfall;
+RTC_DATA_ATTR struct rainfallData rainfall;
 RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR unsigned int elapsedTime = 0;
 
 //===========================================
 // Global instantiation
@@ -102,6 +163,8 @@ BME280I2C bme;
 Adafruit_SI1145 uv = Adafruit_SI1145();
 bool lowBattery = false;
 bool WiFiEnable = false;
+struct sensorStatus status;
+long rssi = 0;
 
 //===========================================
 // ISR Prototypes
@@ -116,6 +179,11 @@ void setup()
 {
   long UpdateIntervalModified = 0;
 
+  setCpuFrequencyMhz (80);
+  rtc_gpio_init(GPIO_NUM_12);
+  rtc_gpio_set_direction(GPIO_NUM_12, RTC_GPIO_MODE_OUTPUT_ONLY);
+  rtc_gpio_set_level(GPIO_NUM_12, 1);
+
   esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
   esp_task_wdt_add(NULL); //add current thread to WDT watch
 
@@ -124,7 +192,6 @@ void setup()
   pinMode(RAIN_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
-
   Serial.begin(115200);
   delay(25);
 
@@ -134,25 +201,24 @@ void setup()
   BlinkLED(1);
   bootCount++;
 
-  //Initialize i2c and 1w sensors
-  Wire.begin();
-  bme.begin();
-#ifdef BH1750Enable
-  lightMeter.begin();
-#endif
-  temperatureSensor.begin();
-
-
   updateWake();
   wakeup_reason();
   if (WiFiEnable)
   {
-    MonPrintf("Connecting to WiFi\n");
+    rssi = wifi_connect();
+    sensorEnable();
+    sensorStatusToConsole();
+    //Calibrate Clock - My ESP RTC is noticibly fast
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    printLocalTime();
+    printTimeNextWake();
     processSensorUpdates();
+    WiFi.disconnect();
+    esp_wifi_stop();
   }
 
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);
-  if (UpdateIntervalModified <= 0)
+  if (UpdateIntervalModified < 3)
   {
     UpdateIntervalModified = 3;
   }
@@ -179,32 +245,30 @@ void processSensorUpdates(void)
 #ifdef USE_EEPROM
   readEEPROM(&rainfall);
 #endif
-  wifi_connect();
-  //Calibrate Clock - My ESP RTC is noticibly fast
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
-  printTimeNextWake();
-
   //Get Sensor data
   readSensors(&environment);
 
+  //move rainTicks into interval container
+  rainfall.intervalRainfall = rainTicks;
+
   //move rainTicks into hourly containers
   MonPrintf("Current Hour: %i\n\n", timeinfo.tm_hour);
+
   addTipsToHour(rainTicks);
   clearRainfallHour(timeinfo.tm_hour + 1);
   rainTicks = 0;
 
-  //Start sensor housekeeping
-  addTipsToHour(rainTicks);
-  clearRainfallHour(timeinfo.tm_hour + 1);
-  rainTicks = 0;
   //Conditional write of rainfall data to EEPROM
 #ifdef USE_EEPROM
   conditionalWriteEEPROM(&rainfall);
 #endif
   //send sensor data to IOT destination
   sendData(&environment);
-  WiFi.disconnect();
+  //send sensor data to MQTT
+  if (App == "MQTT")
+  {
+    SendDataMQTT(&environment);
+  }
 }
 
 //===========================================================
@@ -243,6 +307,7 @@ void wakeup_reason()
     default :
       MonPrintf("Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
       WiFiEnable = true;
+      //I manually call this line to zero out EEPROM array once and only once, then remove this line
       //jh initEEPROM(); //my debug only
       break;
   }
@@ -256,9 +321,11 @@ void sleepyTime(long UpdateIntervalModified)
 {
   Serial.println("\n\n\nGoing to sleep now...");
   Serial.printf("Waking in %i seconds\n\n\n\n\n\n\n\n\n\n", UpdateIntervalModified);
-  //updateWake();
+
+  rtc_gpio_set_level(GPIO_NUM_12, 0);
   esp_sleep_enable_timer_wakeup(UpdateIntervalModified * SEC);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_25, 0);
+  elapsedTime = (int)millis() / 1000;
   esp_deep_sleep_start();
 }
 
@@ -296,4 +363,30 @@ void BlinkLED(int count)
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);
   }
+}
+
+//===========================================
+// sensorEnable: Initialize i2c and 1w sensors
+//===========================================
+void sensorEnable(void)
+{
+  status.temperature = Wire.begin();
+  status.bme = bme.begin();
+  status.uv = uv.begin();
+#ifdef BH1750Enable
+  status.lightMeter = lightMeter.begin();
+#endif
+  temperatureSensor.begin();                //returns void - cannot directly check
+}
+
+//===========================================
+// sensorStatusToConsole: Output .begin return values
+//===========================================
+void sensorStatusToConsole(void)
+{
+  MonPrintf("----- Sensor Statuses -----\n");
+  MonPrintf("BME status:         %i\n", status.bme);
+  MonPrintf("UV status:          %i\n", status.uv);
+  MonPrintf("lightMeter status:  %i\n", status.lightMeter);
+  MonPrintf("temperature status: %i\n\n", status.temperature);
 }

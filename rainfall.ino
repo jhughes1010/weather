@@ -11,12 +11,30 @@ void clearRainfall(void)
   memset(&rainfall, 0x00, sizeof(rainfall));
 }
 
+
+
+//=======================================================================
+//
+//  Hourly accumulation routines
+//
+//=======================================================================
+
+
 //=======================================================================
 //  clearRainfallHour: zero out specific hour element of rainfall structure array
 //=======================================================================
 void clearRainfallHour(int hourPtr)
 {
+  //Clear carryover if hourPtr is not matching prior hourPtr value (we have a new hour)
+  if (rainfall.priorHour != hourPtr)
+  {
+    rainfall.hourlyCarryover = 0;
+  }
+  //move contents of oldest hour to the carryover location and set hour to zero
+  rainfall.hourlyCarryover += rainfall.hourlyRainfall[hourPtr % 24];
   rainfall.hourlyRainfall[hourPtr % 24] = 0;
+
+  rainfall.priorHour = hourPtr;
 }
 
 //=======================================================================
@@ -41,7 +59,7 @@ void printHourlyArray (void)
 }
 
 //=======================================================================
-//  last24: return tip counter for last 24h (technically 23h)
+//  last24: return tip counter for last 24h
 //=======================================================================
 int last24(void)
 {
@@ -51,9 +69,84 @@ int last24(void)
   {
     totalRainfall += rainfall.hourlyRainfall[hour];
   }
-  MonPrintf("Total rainfall: %i\n", totalRainfall);
+  //add carryover value
+  totalRainfall += rainfall.hourlyCarryover;
+
+  MonPrintf("Total rainfall (last 24 hours): %i\n", totalRainfall);
   return totalRainfall;
 }
+
+
+//=======================================================================
+//
+//  Minute accumulation routines
+//
+//=======================================================================
+// NOTE: When speaking of minutes and minute array, we use 5 min as
+// minimum grouping for minute-by-minute rainfall
+
+
+
+//=======================================================================
+//  clearRainfallMinute: zero out specific minute element of rainfall structure array
+//=======================================================================
+void clearRainfallMinute(int minutePtr)
+{
+  int minuteIndex;
+  minuteIndex = (int)minutePtr / 12 + 1;
+  //Clear carryover if hourPtr is not matching prior hourPtr value (we have a new hour)
+  if (rainfall.priorHour != minutePtr)
+  {
+    rainfall.hourlyCarryover = 0;
+  }
+  //move contents of oldest hour to the carryover location and set hour to zero
+  rainfall.hourlyCarryover += rainfall.hourlyRainfall[minutePtr % 24];
+  rainfall.hourlyRainfall[minutePtr % 24] = 0;
+
+  //rainfall.priorHour = hourPtr;
+}
+
+//=======================================================================
+//  addTipsToMinute: increment current hour tip count
+//=======================================================================
+void addTipsToMinute(int count)
+{
+  int minute = timeinfo.tm_hour;
+  rainfall.current60MinRainfall[minute] = rainfall.current60MinRainfall[minute] + count;
+}
+
+//=======================================================================
+//  printMinuteArray: diagnostic routine to print minute rainfall array to terminal
+//=======================================================================
+void printMinuteArray (void)
+{
+  int minute = 0;
+  for (minute = 0; minute < 12; minute++)
+  {
+    MonPrintf("Minute %i: %u\n", minute * 5, rainfall.current60MinRainfall[minute]);
+  }
+}
+
+//=======================================================================
+//  last60min: return tip counter for last 60 minutes
+//=======================================================================
+int last60min(void)
+{
+  int minute;
+  int totalRainfall = 0;
+  for (minute = 0; minute < 12; minute++)
+  {
+    totalRainfall += rainfall.current60MinRainfall[minute];
+  }
+  //add carryover value
+  totalRainfall += rainfall.minuteCarryover;
+
+  MonPrintf("Total rainfall (last 60 minutes): %i\n", totalRainfall);
+  return totalRainfall;
+}
+
+
+
 
 //=======================================================================
 //  rainTick: ISR for rain tip gauge count
