@@ -84,11 +84,15 @@ void MQTTPublishString(const char topic[], char *value, bool retain)
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%s", value);
+#ifdef ExtendedMQTT
   MonPrintf("%s: %s\n", topicBuffer, payload);
+#endif
   while (!status && retryCount < 5)
   {
     status = client.publish(topicBuffer, payload, retain);
+#ifdef ExtendedMQTT
     MonPrintf("MQTT status: %i\n", status);
+#endif
     delay(50);
     retryCount++;
   }
@@ -109,11 +113,15 @@ void MQTTPublishInt(const char topic[], int value, bool retain)
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%i", value);
+#ifdef ExtendedMQTT
   MonPrintf("%s: %s\n", topicBuffer, payload);
+#endif
   while (!status && retryCount < 5)
   {
     status = client.publish(topicBuffer, payload, retain);
+#ifdef ExtendedMQTT
     MonPrintf("MQTT status: %i\n", status);
+#endif
     delay(50);
     retryCount++;
   }
@@ -135,11 +143,16 @@ void MQTTPublishLong(const char topic[], long value, bool retain)
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%li", value);
+#ifdef ExtendedMQTT
   MonPrintf("%s: %s\n", topicBuffer, payload);
+#endif
   while (!status && retryCount < 5)
   {
     status = client.publish(topicBuffer, payload, retain);
+#ifdef ExtendedMQTT
     MonPrintf("MQTT status: %i\n", status);
+#endif
+
     delay(50);
     retryCount++;
   }
@@ -160,11 +173,15 @@ void MQTTPublishFloat(const char topic[], float value, bool retain)
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%6.3f", value);
+#ifdef ExtendedMQTT
   MonPrintf("%s: %s\n", topicBuffer, payload);
+#endif
   while (!status && retryCount < 5)
   {
     status = client.publish(topicBuffer, payload, retain);
+#ifdef ExtendedMQTT
     MonPrintf("MQTT status: %i\n", status);
+#endif
     delay(50);
     retryCount++;
   }
@@ -192,11 +209,15 @@ void MQTTPublishBool(const char topic[], bool value, bool retain)
   {
     sprintf(payload, "false");
   }
+#ifdef ExtendedMQTT
   MonPrintf("%s: %s\n", topicBuffer, payload);
+#endif
   while (!status && retryCount < 5)
   {
     status = client.publish(topicBuffer, payload, retain);
+#ifdef ExtendedMQTT
     MonPrintf("MQTT status: %i\n", status);
+#endif
     delay(50);
     retryCount++;
   }

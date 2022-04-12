@@ -7,6 +7,7 @@
 //Controls supression of the MonPrintf function to serial
 //===========================================
 #define SerialMonitor
+#define ExtendedMQTT
 
 //===========================================
 //WiFi connection

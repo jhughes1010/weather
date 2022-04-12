@@ -3,6 +3,8 @@
 //=======================================================================
 long wifi_connect()
 {
+  bool WiFiConnectHalt = false;
+  int retry = 0;
   long wifi_signal = 0;
 
   MonPrintf("Connecting to %s\n", App);
@@ -15,15 +17,24 @@ long wifi_connect()
   {
     MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
-    while (WiFi.status() != WL_CONNECTED)
+    while (WiFi.status() != WL_CONNECTED && !WiFiConnectHalt )
     {
       delay(500);
+      retry++;
+      if (retry > 15)
+      {
+        MonPrintf("Max trys to connect to WiFi reached and failed");
+        WiFiConnectHalt = true;
+        wifi_signal = -9999;
+        return wifi_signal;
+      }
     }
     MonPrintf("WiFi connected\n");
     wifi_signal = WiFi.RSSI();
   }
-  else if (App == "MQTT")  // for posting datas to Thingspeak website
-  {
+  /*
+    else if (App == "MQTT")  // for posting datas to Thingspeak website
+    {
     MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
 
@@ -32,7 +43,8 @@ long wifi_connect()
       delay(500);
     }
     MonPrintf("WiFi connected\n");
-  }  
+    }
+  */
   else
   {
     MonPrintf(" is not a valid application");
