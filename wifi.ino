@@ -7,7 +7,7 @@ long wifi_connect()
   int retry = 0;
   long wifi_signal = 0;
 
-  MonPrintf("Connecting to %s\n", App);
+  MonPrintf("Starting wifi for App = %s\n", App);
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
 
