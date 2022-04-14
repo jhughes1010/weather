@@ -4,13 +4,19 @@
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
-//version 1.3 RC1
-#define VERSION 1.3
+//version 1.3.1
+#define VERSION "1.3.1"
 
 //=============================================
 // Changelog
 //=============================================
-/* v1.3 supports 24h rainfall data, not 23h
+/* 
+ *  v1.3.1
+ *      1. Corrects missing quotes on #define VERSION statement
+ *      2. max retry if 15 connect attempts added and then we bail on WiFi connect. This prevents us from hitting the WDT limit and rebooting
+ *  
+ *  
+ *  v1.3 supports 24h rainfall data, not 23h
         supports current 60 min rainfall, not
         current "hour" that looses data at top
         of the hour.
@@ -81,14 +87,14 @@
 #define WDT_TIMEOUT 60   //watchdog timer
 
 #else
-#define WIND_SPD_PIN 26  //reed switch based anemometer count
+#define WIND_SPD_PIN        26  //reed switch based anemometer count
 #define RAIN_PIN            25  //reed switch based tick counter on tip bucket
-#define WIND_DIR_PIN  35  //variable voltage divider output based on varying R network with reed switches
-#define PR_PIN                34  //photoresistor pin
-#define VOLT_PIN           33  //voltage divider for battery monitor
-#define TEMP_PIN          15  // DS18B20 hooked up to GPIO pin 15
-#define LED_PIN              14  //Diagnostics using built-in LED
-//#define MODE_PIN         12  //Load Switch
+#define WIND_DIR_PIN        35  //variable voltage divider output based on varying R network with reed switches
+#define PR_PIN              34  //photoresistor pin
+#define VOLT_PIN            33  //voltage divider for battery monitor
+#define TEMP_PIN            15  // DS18B20 hooked up to GPIO pin 15
+#define LED_PIN             14  //Diagnostics using built-in LED
+//#define MODE_PIN          12  //Load Switch
 #endif
 
 //===========================================
@@ -206,15 +212,18 @@ void setup()
   if (WiFiEnable)
   {
     rssi = wifi_connect();
-    sensorEnable();
-    sensorStatusToConsole();
-    //Calibrate Clock - My ESP RTC is noticibly fast
-    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    printLocalTime();
-    printTimeNextWake();
+    if (rssi != RSSI_INVALID)
+    {
+      sensorEnable();
+      sensorStatusToConsole();
+      //Calibrate Clock - My ESP RTC is noticibly fast
+      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+      printLocalTime();
+      printTimeNextWake();
     processSensorUpdates();
-    WiFi.disconnect();
-    esp_wifi_stop();
+      WiFi.disconnect();
+      esp_wifi_stop();
+    }
   }
 
   UpdateIntervalModified = nextUpdate - mktime(&timeinfo);

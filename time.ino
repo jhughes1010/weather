@@ -5,7 +5,8 @@ struct tm timeinfo;
 //=======================================================================
 void printLocalTime()
 {
-  if (!getLocalTime(&timeinfo)) {
+  if (!getLocalTime(&timeinfo)) 
+  {
     MonPrintf("Failed to obtain time\n");
     return;
   }

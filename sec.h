@@ -7,6 +7,7 @@
 //Controls supression of the MonPrintf function to serial
 //===========================================
 #define SerialMonitor
+#define ExtendedMQTT
 
 //===========================================
 //WiFi connection
@@ -59,6 +60,11 @@ const char mainTopic[20] = "MainTopic/";
 //===========================================
 //I see 2 switch pulls to GND per revolation. Not sure what others see
 #define WIND_TICKS_PER_REVOLUTION 2
+
+//===========================================
+//General defines
+//===========================================
+#define RSSI_INVALID -9999
 
 //===========================================
 //Set how often to wake and read sensors
