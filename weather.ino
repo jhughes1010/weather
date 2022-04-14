@@ -212,7 +212,7 @@ void setup()
   if (WiFiEnable)
   {
     rssi = wifi_connect();
-    if (rssi != -9999)
+    if (rssi != RSSI_INVALID)
     {
       sensorEnable();
       sensorStatusToConsole();

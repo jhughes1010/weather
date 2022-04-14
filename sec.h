@@ -62,6 +62,11 @@ const char mainTopic[20] = "MainTopic/";
 #define WIND_TICKS_PER_REVOLUTION 2
 
 //===========================================
+//General defines
+//===========================================
+#define RSSI_INVALID -9999
+
+//===========================================
 //Set how often to wake and read sensors
 //===========================================
 //const int UpdateIntervalSeconds = 15 * 60;  //Sleep timer (900s) for my normal operation
