@@ -35,167 +35,112 @@ void SendDataMQTT (struct sensorData *environment)
       delay(1000);
     }
   }
-  MQTTPublishInt("boot/", (int)bootCount, true);
-  MQTTPublishLong("rssi/", rssi, true);
-  MQTTPublishInt("temperatureF/", (int)environment->temperatureF, true);
-  MQTTPublishInt("temperatureC/", (int)environment->temperatureC, true);
-  MQTTPublishFloat("windSpeed/", environment->windSpeed, true);
-  MQTTPublishInt("windDirection/", (int)environment->windDirection, true);
-  MQTTPublishString("windCardinalDirection/", environment->windCardinalDirection, true);
-  MQTTPublishInt("photoresistor/", (int)environment->photoresistor, true);
+  MQTTPublish("boot/", (int)bootCount, true);
+  MQTTPublish("rssi/", rssi, true);
+  MQTTPublish("temperatureF/", (int)environment->temperatureF, true);
+  MQTTPublish("temperatureC/", (int)environment->temperatureC, true);
+  MQTTPublish("windSpeed/", environment->windSpeed, true);
+  MQTTPublish("windDirection/", (int)environment->windDirection, true);
+  MQTTPublish("windCardinalDirection/", environment->windCardinalDirection, true);
+  MQTTPublish("photoresistor/", (int)environment->photoresistor, true);
 #ifndef METRIC
-  MQTTPublishFloat("rainfallInterval/", rainfall.intervalRainfall * 0.011, true);
-  MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011, true);
-  MQTTPublishFloat("rainfall24/", last24() * 0.011, true);
+  MQTTPublish("rainfallInterval/", (float) (rainfall.intervalRainfall * 0.011), true);
+  MQTTPublish("rainfall/", (float) (rainfall.hourlyRainfall[hourPtr] * 0.011), true);
+  MQTTPublish("rainfall24/", (float) (last24() * 0.011), true);
 #else
-  MQTTPublishFloat("rainfallInterval/", rainfall.intervalRainfall * 0.011 * 25.4, true);
-  MQTTPublishFloat("rainfall/", rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4, true);
-  MQTTPublishFloat("rainfall24/", last24() * 0.011 * 25.4, true);
+  MQTTPublish("rainfallInterval/", (float) (rainfall.intervalRainfall * 0.011 * 25.4), true);
+  MQTTPublish("rainfall/", (float) (rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4), true);
+  MQTTPublish("rainfall24/", (float) (last24() * 0.011 * 25.4), true);
 #endif
 
-  MQTTPublishFloat("batteryVoltage/", environment->batteryVoltage, true);
-  MQTTPublishFloat("lux/", environment->lux, true);
-  MQTTPublishFloat("UVIndex/", environment->UVIndex, true);
-  MQTTPublishFloat("relHum/", environment->humidity, true);
-  MQTTPublishFloat("pressure/", environment->barometricPressure, true);
-  MQTTPublishFloat("caseTemperature/", environment->BMEtemperature, true);
-  MQTTPublishInt("batteryADC/", (int)environment->batteryADC, true);
-  MQTTPublishInt("ESPcoreF/", (int)environment->coreF, true);
-  MQTTPublishInt("ESPcoreC/", (int)environment->coreC, true);
-  MQTTPublishInt("timeEnabled/", (int)elapsedTime, true);
-  MQTTPublishBool("lowBattery/", lowBattery, true);
+  MQTTPublish("batteryVoltage/", environment->batteryVoltage, true);
+  MQTTPublish("lux/", environment->lux, true);
+  MQTTPublish("UVIndex/", environment->UVIndex, true);
+  MQTTPublish("relHum/", environment->humidity, true);
+  MQTTPublish("pressure/", environment->barometricPressure, true);
+  MQTTPublish("caseTemperature/", environment->BMEtemperature, true);
+  MQTTPublish("batteryADC/", (int)environment->batteryADC, true);
+  MQTTPublish("ESPcoreF/", (int)environment->coreF, true);
+  MQTTPublish("ESPcoreC/", (int)environment->coreC, true);
+  MQTTPublish("timeEnabled/", (int)elapsedTime, true);
+  MQTTPublish("lowBattery/", lowBattery, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
 }
 
 //=======================================================================
-//  MQTTPublishString: routine to publish string
+//  MQTTPublish String: routine to publish string
 //=======================================================================
-void MQTTPublishString(const char topic[], char *value, bool retain)
+void MQTTPublish(const char topic[], char *value, bool retain)
 {
   char topicBuffer[256];
   char payload[256];
-  int retryCount = 0;
-  int status = 0;
 
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%s", value);
-#ifdef ExtendedMQTT
-  MonPrintf("%s: %s\n", topicBuffer, payload);
-#endif
-  while (!status && retryCount < 5)
-  {
-    status = client.publish(topicBuffer, payload, retain);
-#ifdef ExtendedMQTT
-    MonPrintf("MQTT status: %i\n", status);
-#endif
-    delay(50);
-    retryCount++;
-  }
+  MQTTSend(topicBuffer, payload, retain);
 }
 
 //=======================================================================
-//  MQTTPublishInt: routine to publish int values as strings
+//  MQTTPublish Int: routine to publish int values as strings
 //=======================================================================
-void MQTTPublishInt(const char topic[], int value, bool retain)
+void MQTTPublish(const char topic[], int value, bool retain)
 {
   char topicBuffer[256];
   char payload[256];
-  int retryCount = 0;
-  int status = 0;
 
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%i", value);
-#ifdef ExtendedMQTT
-  MonPrintf("%s: %s\n", topicBuffer, payload);
-#endif
-  while (!status && retryCount < 5)
-  {
-    status = client.publish(topicBuffer, payload, retain);
-#ifdef ExtendedMQTT
-    MonPrintf("MQTT status: %i\n", status);
-#endif
-    delay(50);
-    retryCount++;
-  }
+  MQTTSend(topicBuffer, payload, retain);
 }
 
 
 //=======================================================================
-//  MQTTPublishLong: routine to publish int values as strings
+//  MQTTPublish Long: routine to publish int values as strings
 //=======================================================================
-void MQTTPublishLong(const char topic[], long value, bool retain)
+void MQTTPublish(const char topic[], long value, bool retain)
 {
   char topicBuffer[256];
   char payload[256];
-  int retryCount = 0;
-  int status = 0;
 
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%li", value);
-#ifdef ExtendedMQTT
-  MonPrintf("%s: %s\n", topicBuffer, payload);
-#endif
-  while (!status && retryCount < 5)
-  {
-    status = client.publish(topicBuffer, payload, retain);
-#ifdef ExtendedMQTT
-    MonPrintf("MQTT status: %i\n", status);
-#endif
-
-    delay(50);
-    retryCount++;
-  }
+  MQTTSend(topicBuffer, payload, retain);
 }
 
 //=======================================================================
-//  MQTTPublishFloat: routine to publish float values as strings
+//  MQTTPublish Float: routine to publish float values as strings
 //=======================================================================
-void MQTTPublishFloat(const char topic[], float value, bool retain)
+void MQTTPublish(const char topic[], float value, bool retain)
 {
   char topicBuffer[256];
   char payload[256];
-  int retryCount = 0;
-  int status = 0;
 
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
   if (!client.connected()) reconnect();
   client.loop();
   sprintf(payload, "%6.3f", value);
-#ifdef ExtendedMQTT
-  MonPrintf("%s: %s\n", topicBuffer, payload);
-#endif
-  while (!status && retryCount < 5)
-  {
-    status = client.publish(topicBuffer, payload, retain);
-#ifdef ExtendedMQTT
-    MonPrintf("MQTT status: %i\n", status);
-#endif
-    delay(50);
-    retryCount++;
-  }
+  MQTTSend(topicBuffer, payload, retain);
 }
 
 //=======================================================================
-//  MQTTPublishBool: routine to publish bool values as strings
+//  MQTTPublish Bool: routine to publish bool values as strings
 //=======================================================================
-void MQTTPublishBool(const char topic[], bool value, bool retain)
+void MQTTPublish(const char topic[], bool value, bool retain)
 {
   char topicBuffer[256];
   char payload[256];
-  int retryCount = 0;
-  int status = 0;
 
   strcpy(topicBuffer, mainTopic);
   strcat(topicBuffer, topic);
@@ -209,19 +154,9 @@ void MQTTPublishBool(const char topic[], bool value, bool retain)
   {
     sprintf(payload, "false");
   }
-#ifdef ExtendedMQTT
-  MonPrintf("%s: %s\n", topicBuffer, payload);
-#endif
-  while (!status && retryCount < 5)
-  {
-    status = client.publish(topicBuffer, payload, retain);
-#ifdef ExtendedMQTT
-    MonPrintf("MQTT status: %i\n", status);
-#endif
-    delay(50);
-    retryCount++;
-  }
+  MQTTSend(topicBuffer, payload, retain);
 }
+
 //=======================================================================
 //  reconnect: MQTT reconnect
 //=======================================================================
@@ -240,5 +175,26 @@ void reconnect() {
       // Wait 5 seconds before retrying
       delay(5000);
     }
+  }
+}
+
+//=======================================================================
+//  MQTTSend: MQTT send topic with value to broker
+//=======================================================================
+void MQTTSend(char *topicBuffer, char *payload, bool retain)
+{
+  int status = 0;
+  int retryCount = 0;
+#ifdef ExtendedMQTT
+  MonPrintf("%s: %s\n", topicBuffer, payload);
+#endif
+  while (!status && retryCount < 5)
+  {
+    status = client.publish(topicBuffer, payload, retain);
+#ifdef ExtendedMQTT
+    MonPrintf("MQTT status: %i\n", status);
+#endif
+    delay(50);
+    retryCount++;
   }
 }
