@@ -25,7 +25,7 @@ long wifi_connect()
       {
         MonPrintf("Max trys to connect to WiFi reached and failed");
         WiFiConnectHalt = true;
-        wifi_signal = -9999;
+        wifi_signal = RSSI_INVALID;
         return wifi_signal;
       }
     }
