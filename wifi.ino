@@ -3,17 +3,11 @@
 //=======================================================================
 long wifi_connect()
 {
-<<<<<<< HEAD
-  long wifi_signal = 0;
-
-  MonPrintf("Connecting to %s\n", App);
-=======
   bool WiFiConnectHalt = false;
   int retry = 0;
   long wifi_signal = 0;
 
   MonPrintf("Starting wifi for App = %s\n", App);
->>>>>>> develop
   if (App == "BLYNK")  // for posting datas to Blynk App
   {
 
@@ -23,11 +17,7 @@ long wifi_connect()
   {
     MonPrintf("Connecting to WiFi\n");
     WiFi.begin(ssid, pass);
-<<<<<<< HEAD
-    while (WiFi.status() != WL_CONNECTED)
-=======
     while (WiFi.status() != WL_CONNECTED && !WiFiConnectHalt )
->>>>>>> develop
     {
       delay(500);
       retry++;
