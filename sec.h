@@ -77,6 +77,7 @@ const int UpdateIntervalSeconds = 5 * 60;  //Sleep timer (60s) testing
 //===========================================
 //batteryCalFactor = measured battery voltage/ADC reading
 #define batteryCalFactor .0011804
+#define batteryLowVoltage 3.3
 
 //===========================================
 //Timezone information

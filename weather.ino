@@ -4,19 +4,21 @@
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
-//version 1.3.1
-#define VERSION "1.3.1"
+#define VERSION "1.3.2"
 
 //=============================================
 // Changelog
 //=============================================
-/* 
- *  v1.3.1
- *      1. Corrects missing quotes on #define VERSION statement
- *      2. max retry if 15 connect attempts added and then we bail on WiFi connect. This prevents us from hitting the WDT limit and rebooting
- *  
- *  
- *  v1.3 supports 24h rainfall data, not 23h
+/*
+ *  v1.3.2
+ *      1. I2C OLED diagnostics added (if needed)
+ *      2. 
+    v1.3.1
+        1. Corrects missing quotes on #define VERSION statement
+        2. max retry if 15 connect attempts added and then we bail on WiFi connect. This prevents us from hitting the WDT limit and rebooting
+
+
+    v1.3 supports 24h rainfall data, not 23h
         supports current 60 min rainfall, not
         current "hour" that looses data at top
         of the hour.
@@ -70,6 +72,12 @@
 #include <esp_task_wdt.h>
 #include <esp_system.h>
 #include <driver/rtc_io.h>
+//OLED diagnostics board
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
 
 //===========================================
 // Defines
@@ -201,11 +209,25 @@ void setup()
   Serial.begin(115200);
   delay(25);
 
+
+
+
   //Title message
   MonPrintf("\nWeather station - Deep sleep version.\n");
   MonPrintf("Version %s\n\n", VERSION);
   BlinkLED(1);
   bootCount++;
+
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3D (for the 128x64)
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  printLocalTimeLCD();
+  printADCLCD();
+  display.printf("SSID: %s\n", ssid);
+  display.print("BOOT: ");
+  display.println(bootCount);
+  display.display();
 
   updateWake();
   wakeup_reason();
@@ -220,7 +242,7 @@ void setup()
       configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
       printLocalTime();
       printTimeNextWake();
-    processSensorUpdates();
+      processSensorUpdates();
       WiFi.disconnect();
       esp_wifi_stop();
     }
@@ -233,6 +255,7 @@ void setup()
   }
   //pet the dog!
   esp_task_wdt_reset();
+  BlinkLED(2);
   sleepyTime(UpdateIntervalModified);
 }
 
@@ -278,6 +301,9 @@ void processSensorUpdates(void)
   {
     SendDataMQTT(&environment);
   }
+  display.printf("Temp: %4.1f F\n", environment.temperatureF);
+  display.printf("Pressure: %4.1f inHg\n", environment.barometricPressure);
+  display.display();
 }
 
 //===========================================================
@@ -370,7 +396,7 @@ void BlinkLED(int count)
     delay(150);
     //LED OFF
     digitalWrite(LED_BUILTIN, LOW);
-    delay(500);
+    delay(350);
   }
 }
 
