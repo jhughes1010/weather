@@ -51,6 +51,13 @@ const char mainTopic[20] = "MainTopic/";
 //#define USE_EEPROM
 
 //===========================================
+//BME280 altitude offsets (set by user)
+//===========================================
+#define ALTITUDE_OFFSET_IMPERIAL 5.58
+#define ALTITUDE_OFFSET_METRIC 142.6
+
+
+//===========================================
 //BH1750 Enable
 //===========================================
 #define BH1750Enable
