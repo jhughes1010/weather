@@ -150,7 +150,7 @@ void readUV(struct sensorData *environment)
 {
   if (status.uv)
   {
-    environment->UVIndex = uv.readUV() / 100;
+    environment->UVIndex = (float) uv.readUV() / 100;
   }
   else
   {

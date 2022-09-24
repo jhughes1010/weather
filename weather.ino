@@ -4,12 +4,16 @@
 //
 //Supporting the following project: https://www.instructables.com/Solar-Powered-WiFi-Weather-Station-V30/
 
-#define VERSION "1.3.2"
+#define VERSION "1.3.3"
 
 //=============================================
 // Changelog
 //=============================================
 /*
+ * v1.3.3
+ *      1. Corrected error with readUV casting an int result / 100. Now casting that operation as a float. I was always receiving a UVIndex of 0
+ * 
+ * 
  *  v1.3.2
  *      1. I2C OLED diagnostics added (if needed)
  *      2. 
