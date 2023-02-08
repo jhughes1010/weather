@@ -36,6 +36,8 @@ const int mqttPort = 1883;
 const char* mqttUser = "username";
 const char* mqttPassword = "password";
 char mainTopic[20] = "MainTopic/";
+char prefix[20] = "prefix";
+
 
 
 //===========================================

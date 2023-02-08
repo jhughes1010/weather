@@ -81,7 +81,6 @@ void SendDataMQTT (struct sensorData *environment)
   MQTTPublish("rainfall/state", (float) (rainfall.hourlyRainfall[hourPtr] * 0.011 * 25.4), true);
   MQTTPublish("rainfall24/state", (float) (last24() * 0.011 * 25.4), true);
 #endif
-
   MQTTPublish("batteryVoltage/state", (float) environment->batteryVoltage, true);
   MQTTPublish("lux/state", environment->lux, true);
   MQTTPublish("UVIndex/state", environment->UVIndex, true);
@@ -100,21 +99,11 @@ void SendDataMQTT (struct sensorData *environment)
 
 void configMQTT_HA( struct config sensor)
 {
-  // homeassistant/sensor/weatherA/temperatureC
-  // homeassistant/sensor/weather/temperatureC
-  // {"device_class": "temperature", "name": "temperatureC", "state_topic": "weather/temperatureC", "unit_of_measurement": "°C" }
-  Serial.println("configMQTT_HA");
   char orgmainTopic[20];
   char confJson[300];
   char topic[60];
   memcpy( orgmainTopic, mainTopic, sizeof(orgmainTopic));
   memcpy( mainTopic, "homeassistant/", sizeof(mainTopic));
-  char const *v_part1="{\"device_class\": \"";
-  
-
-  char const *v_part5="temperatureC\", \"unit_of_measurement\": \"°C\" }";
-  
-  
   strcpy(confJson, "{");
   if(strlen(sensor.device_class) != 0) {
     strcat(confJson, "\"device_class\": \"");
@@ -122,30 +111,24 @@ void configMQTT_HA( struct config sensor)
     strcat(confJson, "\",");
   }
   strcat(confJson, " \"name\": \"" );
+  strcat(confJson, prefix );
   strcat(confJson, sensor.name );
   strcat(confJson, "\", \"state_topic\": \"" );
   strcat(confJson, orgmainTopic);
   strcat(confJson, sensor.name);
   strcat(confJson, "/state\"");
-  //strcat(confJson, "");
   if(strlen(sensor.unit_of_measurement) != 0) {
     strcat(confJson, ", \"unit_of_measurement\": \"");
     strcat(confJson, sensor.unit_of_measurement);
     strcat(confJson, "\"");
   } 
   strcat(confJson, "}");
-
-
   strcpy(topic, "sensor/");
   strcat(topic, orgmainTopic);
   strcat(topic, sensor.name);
   strcat(topic, "/config");
-  Serial.println(topic);
-  Serial.println(confJson);
   MQTTPublish(topic,confJson, true);
-
   memcpy( mainTopic, orgmainTopic, sizeof(mainTopic));
-
 }
 
 //=======================================================================
