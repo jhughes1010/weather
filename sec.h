@@ -35,7 +35,9 @@ const char* mqttServer = "192.168.5.74";
 const int mqttPort = 1883;
 const char* mqttUser = "username";
 const char* mqttPassword = "password";
-const char mainTopic[20] = "MainTopic/";
+char mainTopic[20] = "MainTopic/";
+char prefix[20] = "prefix";
+
 
 
 //===========================================
@@ -97,3 +99,7 @@ const int   daylightOffset_sec = 3600;
 //const String App = "BLYNK";         //  alternative is line below
 //const String App = "Thingspeak"; //  alternative is line above
 const String App = "MQTT";         //  alternative is line below
+
+
+//========================= enable homeassistant auto disc. ===================================
+const bool discovery_enable=true;
