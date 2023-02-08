@@ -1,2 +1,6 @@
 secrets.h
 .vscode/
+debug_custom.json
+arduino.json
+debug.cfg
+esp32.svd
